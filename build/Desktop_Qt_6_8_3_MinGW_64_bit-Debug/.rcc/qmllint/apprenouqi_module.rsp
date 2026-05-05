@@ -1,0 +1,10 @@
+-I
+D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug
+-I
+D:/Qt/6.8.3/mingw_64/qml
+--resource
+D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/.qt/rcc/qmake_renouqi.qrc
+--resource
+D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/.qt/rcc/apprenouqi_raw_qml_0.qrc
+--module
+renouqi
