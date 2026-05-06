@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/qt/qml/renouqi/">
+    <file alias="Main.qml">D:/Users/123/Documents/renouqi/Main.qml</file>
+  </qresource>
+</RCC>
+

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>background.npg.jpg</file>
+    </qresource>
+</RCC>

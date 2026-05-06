@@ -1,0 +1,14 @@
+-rootPath
+D:/Users/123/Documents/renouqi
+-cmake-output
+-output-file
+D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/.qt/qml_imports/apprenouqi_build.cmake
+-importPath
+D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/renouqi
+-importPath
+D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug
+-importPath
+D:/Qt/6.8.3/mingw_64/qml
+-qrcFiles
+D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/.qt/rcc/qmake_renouqi.qrc
+D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/.qt/rcc/apprenouqi_raw_qml_0.qrc

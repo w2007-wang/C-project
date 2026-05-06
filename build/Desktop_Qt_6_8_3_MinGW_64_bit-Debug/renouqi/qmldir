@@ -1,0 +1,5 @@
+module renouqi
+typeinfo apprenouqi.qmltypes
+prefer :/qt/qml/renouqi/
+Main 254.0 Main.qml
+
