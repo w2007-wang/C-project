@@ -306,8 +306,12 @@
 		"D:/Qt/6.8.3/mingw_64/lib/cmake/Qt6/QtPublicWalkLibsHelpers.cmake",
 		"D:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake",
 		"D:/Qt/6.8.3/mingw_64/lib/cmake/Qt6/Qt6Dependencies.cmake",
+<<<<<<< HEAD
 		"D:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/GNUInstallDirs.cmake",
 		"D:/Users/123/Documents/renouqi/resources.qrc"
+=======
+		"D:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/GNUInstallDirs.cmake"
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 	],
 	"CMAKE_SOURCE_DIR" : "D:/Users/123/Documents/renouqi",
 	"CROSS_CONFIG" : false,

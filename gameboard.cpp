@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #include "gameboard.h"
+=======
+         #include "gameboard.h"
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 #include <QRandomGenerator>
 
 GameBoard::GameBoard(QObject *parent) : QObject(parent) {
@@ -27,10 +31,13 @@ void GameBoard::initBoard() {
         if (!board[y][x].hasArrow)
             board[y][x].isBlock = true;
     }
+<<<<<<< HEAD
 
     for (int i = 0; i < CHEST_COUNT; ++i) {
         spawnChest(1, 1, 7, 7);
     }
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 }
 
 void GameBoard::rotateArrow(int x, int y) {
@@ -43,6 +50,7 @@ Cell GameBoard::getCell(int x, int y) {
     if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return Cell();
     return board[y][x];
 }
+<<<<<<< HEAD
 
 void GameBoard::spawnArrow(int player1X, int player1Y, int player2X, int player2Y) {
     for (int attempt = 0; attempt < 100; ++attempt) {
@@ -107,3 +115,5 @@ void GameBoard::removeChest(int x, int y) {
     if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return;
     board[y][x].hasChest = false;
 }
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc

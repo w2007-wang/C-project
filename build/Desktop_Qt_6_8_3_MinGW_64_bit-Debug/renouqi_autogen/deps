@@ -140,8 +140,11 @@ renouqi_autogen/timestamp: \
 	D:/Qt/6.8.3/mingw_64/include/QtCore/qyieldcpu.h \
 	D:/Qt/6.8.3/mingw_64/include/QtGui/QKeyEvent \
 	D:/Qt/6.8.3/mingw_64/include/QtGui/QPainter \
+<<<<<<< HEAD
 	D:/Qt/6.8.3/mingw_64/include/QtGui/QPainterPath \
 	D:/Qt/6.8.3/mingw_64/include/QtGui/QPixmap \
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 	D:/Qt/6.8.3/mingw_64/include/QtGui/QTransform \
 	D:/Qt/6.8.3/mingw_64/include/QtGui/qaction.h \
 	D:/Qt/6.8.3/mingw_64/include/QtGui/qbitmap.h \
@@ -162,7 +165,10 @@ renouqi_autogen/timestamp: \
 	D:/Qt/6.8.3/mingw_64/include/QtGui/qkeysequence.h \
 	D:/Qt/6.8.3/mingw_64/include/QtGui/qpaintdevice.h \
 	D:/Qt/6.8.3/mingw_64/include/QtGui/qpainter.h \
+<<<<<<< HEAD
 	D:/Qt/6.8.3/mingw_64/include/QtGui/qpainterpath.h \
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 	D:/Qt/6.8.3/mingw_64/include/QtGui/qpalette.h \
 	D:/Qt/6.8.3/mingw_64/include/QtGui/qpen.h \
 	D:/Qt/6.8.3/mingw_64/include/QtGui/qpicture.h \
@@ -607,7 +613,10 @@ renouqi_autogen/timestamp: \
 	D:/Users/123/Documents/renouqi/main.cpp \
 	D:/Users/123/Documents/renouqi/mainwindow.cpp \
 	D:/Users/123/Documents/renouqi/mainwindow.h \
+<<<<<<< HEAD
 	D:/Users/123/Documents/renouqi/resources.qrc \
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 	D:/Users/123/Documents/renouqi/widget.cpp \
 	D:/Users/123/Documents/renouqi/widget.h \
 	D:/Users/123/Documents/renouqi/widget.ui \

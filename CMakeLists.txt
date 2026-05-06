@@ -31,8 +31,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         doll.cpp
         StartWindow.h
         StartWindow.cpp
+<<<<<<< HEAD
         picture.ui
         resources.qrc
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET renouqi APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

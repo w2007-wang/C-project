@@ -1,13 +1,17 @@
 #include "StartWindow.h"
+<<<<<<< HEAD
 #include <QPixmap>
 #include <QPainter>
 #include <QGuiApplication>
 #include <QScreen>
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 
 StartWindow::StartWindow(QWidget *parent)
     : QWidget(parent)
 {
     setWindowTitle("人偶对决");
+<<<<<<< HEAD
     
     QRect screenRect = QGuiApplication::primaryScreen()->geometry();
     int w = screenRect.width() * 3 / 4;
@@ -15,6 +19,9 @@ StartWindow::StartWindow(QWidget *parent)
     resize(w, h);
 
     m_background.load(":/background.npg.jpg"); // 从资源文件加载背景图片
+=======
+    resize(800, 600); // 初始大小，可随意改
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 
     // 标题
     QLabel *title = new QLabel("人偶对决", this);
@@ -23,7 +30,10 @@ StartWindow::StartWindow(QWidget *parent)
     font.setBold(true);
     title->setFont(font);
     title->setAlignment(Qt::AlignCenter);
+<<<<<<< HEAD
     title->setStyleSheet("color: white; text-shadow: 2px 2px 4px black;");
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 
     // 按钮
     QPushButton *btnStart = new QPushButton("开始游戏", this);
@@ -49,6 +59,7 @@ StartWindow::StartWindow(QWidget *parent)
     connect(btnExit,  &QPushButton::clicked, this, &StartWindow::onExitClicked);
 }
 
+<<<<<<< HEAD
 void StartWindow::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
@@ -59,6 +70,8 @@ void StartWindow::paintEvent(QPaintEvent *event)
     QWidget::paintEvent(event);
 }
 
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 void StartWindow::onStartClicked()
 {
     emit startGameClicked();

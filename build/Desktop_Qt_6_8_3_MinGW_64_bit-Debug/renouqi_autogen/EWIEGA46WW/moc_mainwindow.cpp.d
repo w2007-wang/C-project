@@ -141,7 +141,10 @@ D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/renouqi
   D:/Qt/6.8.3/mingw_64/include/QtCore/qyieldcpu.h \
   D:/Qt/6.8.3/mingw_64/include/QtGui/QKeyEvent \
   D:/Qt/6.8.3/mingw_64/include/QtGui/QPainter \
+<<<<<<< HEAD
   D:/Qt/6.8.3/mingw_64/include/QtGui/QPainterPath \
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
   D:/Qt/6.8.3/mingw_64/include/QtGui/QTransform \
   D:/Qt/6.8.3/mingw_64/include/QtGui/qaction.h \
   D:/Qt/6.8.3/mingw_64/include/QtGui/qbitmap.h \
@@ -162,7 +165,10 @@ D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/renouqi
   D:/Qt/6.8.3/mingw_64/include/QtGui/qkeysequence.h \
   D:/Qt/6.8.3/mingw_64/include/QtGui/qpaintdevice.h \
   D:/Qt/6.8.3/mingw_64/include/QtGui/qpainter.h \
+<<<<<<< HEAD
   D:/Qt/6.8.3/mingw_64/include/QtGui/qpainterpath.h \
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
   D:/Qt/6.8.3/mingw_64/include/QtGui/qpalette.h \
   D:/Qt/6.8.3/mingw_64/include/QtGui/qpen.h \
   D:/Qt/6.8.3/mingw_64/include/QtGui/qpixelformat.h \

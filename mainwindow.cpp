@@ -2,16 +2,24 @@
 #include <QMessageBox>
 #include <QFont>
 #include <QResizeEvent>
+<<<<<<< HEAD
 #include <QGuiApplication>
 #include <QScreen>
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+<<<<<<< HEAD
     QRect screenRect = QGuiApplication::primaryScreen()->geometry();
     int w = screenRect.width() * 3 / 4;
     int h = screenRect.height() * 3 / 4;
     resize(w, h);
+=======
+    // 不再固定大小！允许自由缩放
+    resize(800, 900);
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
     setWindowTitle("箭头人偶对决 - 可缩放窗口");
 
     m_boardMargin = 80;
@@ -38,12 +46,20 @@ MainWindow::~MainWindow()
 {
 }
 
+<<<<<<< HEAD
+=======
+// 窗口大小变化时自动重绘
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
     update();
 }
 
+<<<<<<< HEAD
+=======
+// 计算棋盘整体矩形
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 QRect MainWindow::getBoardRect() const
 {
     int w = width();
@@ -61,6 +77,10 @@ int MainWindow::getCellSize() const
     return getBoardRect().width() / 9;
 }
 
+<<<<<<< HEAD
+=======
+// 网格坐标 → 屏幕坐标
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 QPoint MainWindow::gridToPos(int x, int y) const
 {
     QRect br = getBoardRect();
@@ -68,6 +88,10 @@ QPoint MainWindow::gridToPos(int x, int y) const
     return QPoint(br.x() + x * cs + cs/2, br.y() + y * cs + cs/2);
 }
 
+<<<<<<< HEAD
+=======
+// 屏幕坐标 → 网格坐标
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 QPoint MainWindow::posToGrid(const QPoint &pos) const
 {
     QRect br = getBoardRect();
@@ -90,7 +114,11 @@ void MainWindow::paintEvent(QPaintEvent *e)
 
     if (gameEnd) {
         p.setFont(QFont("Arial", 30));
+<<<<<<< HEAD
         p.setPen(Qt::white);
+=======
+        p.setPen(Qt::white);  // 游戏结束文字白色
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
         p.drawText(rect(), Qt::AlignCenter, "游戏结束");
         return;
     }
@@ -100,6 +128,10 @@ void MainWindow::paintEvent(QPaintEvent *e)
     drawDoll(p, doll2, Qt::blue);
     drawHP(p);
 
+<<<<<<< HEAD
+=======
+    // ========== 这里改成白色 ==========
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
     p.setPen(Qt::white);
     p.setFont(QFont("Arial", 11));
     p.drawText(10, 25,
@@ -125,15 +157,29 @@ void MainWindow::drawBoard(QPainter &p)
                 p.drawRect(r.adjusted(4,4,-4,-4));
             }
             if (c.hasArrow) {
+<<<<<<< HEAD
                 drawArrow(p, r, c.dir, cs);
             }
             if (c.hasChest) {
                 drawChest(p, r, cs);
+=======
+                p.setPen(Qt::blue);
+                QPoint ct = r.center();
+                int len = cs * 0.25;
+                switch (c.dir) {
+                case Right: p.drawLine(ct, ct + QPoint(len,0)); break;
+                case Down:  p.drawLine(ct, ct + QPoint(0,len)); break;
+                case Left:  p.drawLine(ct, ct - QPoint(len,0)); break;
+                case Up:    p.drawLine(ct, ct - QPoint(0,len)); break;
+                default: break;
+                }
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
             }
         }
     }
 }
 
+<<<<<<< HEAD
 void MainWindow::drawArrow(QPainter &p, const QRect &cellRect, Direction dir, int cellSize)
 {
     QPoint center = cellRect.center();
@@ -247,6 +293,8 @@ void MainWindow::drawChest(QPainter &p, const QRect &cellRect, int cellSize)
     p.drawRect(center.x() - 3, center.y() - 2, 6, 8);
 }
 
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 void MainWindow::drawDoll(QPainter &p, Doll *d, const QColor &color)
 {
     QPoint pt = gridToPos(d->x, d->y);
@@ -263,22 +311,38 @@ void MainWindow::drawHP(QPainter &p)
     int barW = w * 0.3;
     int barH = 18;
 
+<<<<<<< HEAD
+=======
+    // 玩家1
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
     int w1 = barW * doll1->hp / 100;
     p.setBrush(Qt::lightGray);
     p.drawRect(20, height()-40, barW, barH);
     p.setBrush(Qt::red);
     p.drawRect(20, height()-40, w1, barH);
+<<<<<<< HEAD
     p.setPen(Qt::white);
     p.drawText(20, height()-15, QString("玩家1 HP: %1 | 加成: %2").arg(doll1->hp).arg(doll1->baseDamage));
 
+=======
+    p.setPen(Qt::white); // 血量文字白色
+    p.drawText(20, height()-15, QString("玩家1 HP: %1").arg(doll1->hp));
+
+    // 玩家2
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
     int w2 = barW * doll2->hp / 100;
     int px2 = w - barW - 20;
     p.setBrush(Qt::lightGray);
     p.drawRect(px2, height()-40, barW, barH);
     p.setBrush(Qt::blue);
     p.drawRect(px2, height()-40, w2, barH);
+<<<<<<< HEAD
     p.setPen(Qt::white);
     p.drawText(px2, height()-15, QString("玩家2 HP: %1 | 加成: %2").arg(doll2->hp).arg(doll2->baseDamage));
+=======
+    p.setPen(Qt::white); // 血量文字白色
+    p.drawText(px2, height()-15, QString("玩家2 HP: %1").arg(doll2->hp));
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 }
 
 
@@ -330,7 +394,10 @@ void MainWindow::updateMoveAnimation()
         currDoll->y = oldY;
         currDoll->isMoving = false;
         moveTimer->stop();
+<<<<<<< HEAD
         board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
         switchPlayer();
         return;
     }
@@ -343,21 +410,28 @@ void MainWindow::updateMoveAnimation()
         currDoll->y = oldY;
         currDoll->isMoving = false;
         moveTimer->stop();
+<<<<<<< HEAD
         board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
         switchPlayer();
         return;
     }
 
+<<<<<<< HEAD
     if (cell.hasChest) {
         board->removeChest(x, y);
         currDoll->baseDamage += 12;
         QMessageBox::information(this, "获得宝箱", QString("基础伤害 +12！\n当前加成: %1").arg(currDoll->baseDamage));
     }
 
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
     if (x == enemy->x && y == enemy->y) {
         currDoll->x = oldX;
         currDoll->y = oldY;
 
+<<<<<<< HEAD
         int damage = currDoll->arrowCount * 4 + currDoll->baseDamage;
         enemy->hurt(damage);
 
@@ -367,13 +441,24 @@ void MainWindow::updateMoveAnimation()
                                  .arg(currDoll->baseDamage)
                                  .arg(damage);
         QMessageBox::information(this, "命中", damageInfo);
+=======
+        int damage = currDoll->arrowCount * 2;
+        enemy->hurt(damage);
+
+        QMessageBox::information(this, "命中",
+                                 QString("途经箭头:%1 → 造成伤害:%2")
+                                     .arg(currDoll->arrowCount).arg(damage));
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 
         if (doll1->isDead()) gameOver(2);
         if (doll2->isDead()) gameOver(1);
 
         currDoll->isMoving = false;
         moveTimer->stop();
+<<<<<<< HEAD
         board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
         switchPlayer();
         return;
     }
@@ -399,7 +484,10 @@ void MainWindow::switchPlayer()
     currPlayer = (currPlayer == 1) ? 2 : 1;
     turnTime = 60;
     currDoll = (currPlayer == 1) ? doll1 : doll2;
+<<<<<<< HEAD
     board->spawnArrow(doll1->x, doll1->y, doll2->x, doll2->y);
+=======
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
     update();
 }
 
@@ -416,4 +504,8 @@ void MainWindow::gameOver(int winner)
     currPlayer = 1;
     turnTime = 60;
     update();
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
