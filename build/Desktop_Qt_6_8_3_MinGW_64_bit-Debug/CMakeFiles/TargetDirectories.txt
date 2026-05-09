@@ -1,9 +1,5 @@
 D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/CMakeFiles/renouqi.dir
 D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/CMakeFiles/edit_cache.dir
 D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/CMakeFiles/rebuild_cache.dir
-D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/CMakeFiles/list_install_components.dir
-D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/CMakeFiles/install.dir
-D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/CMakeFiles/install/local.dir
-D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/CMakeFiles/install/strip.dir
 D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/CMakeFiles/renouqi_autogen_timestamp_deps.dir
 D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/CMakeFiles/renouqi_autogen.dir

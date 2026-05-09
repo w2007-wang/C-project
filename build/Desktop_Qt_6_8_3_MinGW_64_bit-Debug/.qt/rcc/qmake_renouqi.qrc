@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/qt/qml/renouqi">
-    <file alias="qmldir">D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/renouqi/qmldir</file>
-  </qresource>
-</RCC>
-

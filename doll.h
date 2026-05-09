@@ -1,44 +1,46 @@
 #ifndef DOLL_H
 #define DOLL_H
-#include <QObject>
 #include "gameboard.h"
 
-class Doll : public QObject
-{
-    Q_OBJECT
+class Doll {
 public:
-    int x, y;
-    int player;
-    int hp;
-<<<<<<< HEAD
-    int baseDamage;
-    Direction currentDir;
-    Direction launchDir;
-=======
-    Direction currentDir;   // 移动中方向
-    Direction launchDir;    // 出发初始方向
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
-    bool isMoving;
-    int arrowCount;
+    static constexpr int INITIAL_HP = 100;
+    static constexpr int PLAYER1_START_X = 1;
+    static constexpr int PLAYER1_START_Y = 1;
+    static constexpr int PLAYER2_START_X = 7;
+    static constexpr int PLAYER2_START_Y = 7;
+    static constexpr int MAX_STEPS = 200;
 
-    explicit Doll(int player, QObject *parent = nullptr);
+    int x = PLAYER1_START_X;
+    int y = PLAYER1_START_Y;
+    int player = 1;
+    int hp = INITIAL_HP;
+    int baseDamage = 0;
+    Direction currentDir = Down;
+    Direction launchDir = Down;
+    bool isMoving = false;
+    int arrowCount = 0;
+    int stepCount = 0;
+    int chestCollected = 0;
+    int bigSwordCount = 0;
+    int smallSwordCount = 0;
+    int hpCollected = 0;
+    int animFrame = 0;
+    float smoothX = PLAYER1_START_X;
+    float smoothY = PLAYER1_START_Y;
+
+    explicit Doll(int player);
+    ~Doll() = default;
+
     void reset();
     void setStartPos(int x, int y);
     void moveStep();
-<<<<<<< HEAD
     void setLaunchDirection(Direction dir);
     void applyLaunchDirection();
-=======
-    void setLaunchDirection(Direction dir); // 关键：设置出发方向
-    void applyLaunchDirection();             // 出发时应用
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
-    bool checkCollide(Doll *enemy);
+    bool checkCollide(const Doll *enemy) const;
     void hurt(int damage);
+    void heal(int amount);
     bool isDead() const;
 };
 
-<<<<<<< HEAD
 #endif
-=======
-#endif
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc

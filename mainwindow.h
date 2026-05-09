@@ -3,12 +3,12 @@
 
 #include <QMainWindow>
 #include <QPainter>
-<<<<<<< HEAD
 #include <QPainterPath>
-=======
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 #include <QTimer>
 #include <QKeyEvent>
+#include <QPushButton>
+#include <QDialog>
+#include <memory>
 #include "gameboard.h"
 #include "doll.h"
 
@@ -16,8 +16,19 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    static constexpr int BOARD_MARGIN = 80;
+    static constexpr int TURN_TIME = 60;
+    static constexpr int MOVE_INTERVAL = 275;
+    static constexpr int ANIM_INTERVAL = 90;
+    static constexpr int DAMAGE_PER_ARROW = 4;
+    static constexpr int CHEST_SMALL_BONUS = 12;
+    static constexpr int CHEST_BIG_BONUS = 20;
+
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
+
+signals:
+    void returnToStart();
 
 protected:
     void paintEvent(QPaintEvent *e) override;
@@ -30,44 +41,49 @@ private slots:
     void updateMoveAnimation();
     void switchPlayer();
     void gameOver(int winner);
+    void pauseGame();
+    void updateAnimFrame();
 
 private:
-<<<<<<< HEAD
     QRect getBoardRect() const;
     int getCellSize() const;
-=======
-    QRect getBoardRect() const;       // 棋盘所在区域
-    int getCellSize() const;          // 自动计算格子大小
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
     QPoint posToGrid(const QPoint &pos) const;
     QPoint gridToPos(int x, int y) const;
+    QPointF gridToPosF(float x, float y) const;
 
     void drawBoard(QPainter &p);
-<<<<<<< HEAD
     void drawArrow(QPainter &p, const QRect &cellRect, Direction dir, int cellSize);
     void drawChest(QPainter &p, const QRect &cellRect, int cellSize);
-=======
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
-    void drawDoll(QPainter &p, Doll *d, const QColor &color);
+    void drawPortal(QPainter &p, const QRect &cellRect, int cellSize, PortalDirection dir);
+    void drawHealthPack(QPainter &p, const QRect &cellRect, int cellSize);
+    void drawDoll(QPainter &p, const Doll *d, const QColor &color);
     void drawHP(QPainter &p);
     void launch();
+    void restartGame();
+    void loadP1Sprites();
+    QPixmap getP1Sprite(Direction dir, int frame) const;
+    void loadP2Sprites();
+    QPixmap getP2Sprite(Direction dir, int frame) const;
 
-    GameBoard *board;
-    Doll *doll1;
-    Doll *doll2;
-    Doll *currDoll;
+    bool isOutOfBounds(int x, int y) const;
+    Doll* getEnemy() const;
 
-    QTimer *turnTimer;
-    QTimer *moveTimer;
-    int turnTime;
-    int currPlayer;
-    bool gameEnd;
+    std::unique_ptr<GameBoard> board;
+    std::unique_ptr<Doll> doll1;
+    std::unique_ptr<Doll> doll2;
+    Doll *currDoll = nullptr;
 
-    int m_boardMargin;
+    QTimer *turnTimer = nullptr;
+    QTimer *moveTimer = nullptr;
+    QTimer *animTimer = nullptr;
+    QPushButton *pauseButton = nullptr;
+    int turnTime = TURN_TIME;
+    int currPlayer = 1;
+    int turnCounter = 0;
+    bool gameEnd = false;
+    bool isPaused = false;
+    QPixmap p1Sprites[4][3];
+    QPixmap p2Sprites[4][3];
 };
 
-<<<<<<< HEAD
 #endif
-=======
-#endif
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc

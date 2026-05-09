@@ -1,5 +1,33 @@
 <RCC>
     <qresource prefix="/">
         <file>background.npg.jpg</file>
+        <file>背面.png</file>
+        <file>右面.png</file>
+        <file>正面.png</file>
+        <file>左面.png</file>
+        <file>p1正面1.jpg</file>
+        <file>p1正面2.jpg</file>
+        <file>p1正面3.jpg</file>
+        <file>p1右面1.jpg</file>
+        <file>p1右面2.jpg</file>
+        <file>p1右面3.jpg</file>
+        <file>p1左面1.jpg</file>
+        <file>p1左面2.jpg</file>
+        <file>p1左面3.jpg</file>
+        <file>p1背面1.jpg</file>
+        <file>p1背面2.jpg</file>
+        <file>p1背面3.jpg</file>
+        <file>p2正面1.jpg</file>
+        <file>p2正面2.jpg</file>
+        <file>p2正面3.jpg</file>
+        <file>p2右面1.jpg</file>
+        <file>p2右面2.jpg</file>
+        <file>p2右面3.jpg</file>
+        <file>p2左面1.jpg</file>
+        <file>p2左面2.jpg</file>
+        <file>p2左面3.jpg</file>
+        <file>p2背面1.jpg</file>
+        <file>p2背面2.jpg</file>
+        <file>p2背面3.jpg</file>
     </qresource>
 </RCC>

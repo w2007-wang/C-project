@@ -2,191 +2,205 @@
 #include <QMessageBox>
 #include <QFont>
 #include <QResizeEvent>
-<<<<<<< HEAD
 #include <QGuiApplication>
 #include <QScreen>
-=======
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
+#include <QRadialGradient>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QRandomGenerator>
+#include <cmath>
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-{
-<<<<<<< HEAD
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QRect screenRect = QGuiApplication::primaryScreen()->geometry();
     int w = screenRect.width() * 3 / 4;
     int h = screenRect.height() * 3 / 4;
     resize(w, h);
-=======
-    // 不再固定大小！允许自由缩放
-    resize(800, 900);
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
     setWindowTitle("箭头人偶对决 - 可缩放窗口");
 
-    m_boardMargin = 80;
-
-    board = new GameBoard(this);
-    doll1 = new Doll(1, this);
-    doll2 = new Doll(2, this);
+    board = std::make_unique<GameBoard>();
+    doll1 = std::make_unique<Doll>(1);
+    doll2 = std::make_unique<Doll>(2);
 
     turnTimer = new QTimer(this);
     turnTimer->start(1000);
     connect(turnTimer, &QTimer::timeout, this, &MainWindow::updateTurnTimer);
 
     moveTimer = new QTimer(this);
-    moveTimer->setInterval(180);
+    moveTimer->setInterval(MOVE_INTERVAL);
     connect(moveTimer, &QTimer::timeout, this, &MainWindow::updateMoveAnimation);
 
-    currPlayer = 1;
-    turnTime = 60;
-    gameEnd = false;
-    currDoll = doll1;
+    animTimer = new QTimer(this);
+    animTimer->setInterval(ANIM_INTERVAL);
+    connect(animTimer, &QTimer::timeout, this, &MainWindow::updateAnimFrame);
+
+    pauseButton = new QPushButton("暂停", this);
+    pauseButton->setFocusPolicy(Qt::NoFocus);
+    pauseButton->setFixedSize(80, 36);
+    pauseButton->setStyleSheet(
+        "QPushButton { background-color: rgba(0,0,0,180); color: white; "
+        "border: 1px solid #888; border-radius: 6px; font-size: 14px; }"
+        "QPushButton:hover { background-color: rgba(60,60,60,200); }"
+    );
+    connect(pauseButton, &QPushButton::clicked, this, &MainWindow::pauseGame);
+
+    loadP1Sprites();
+    loadP2Sprites();
+    currDoll = doll1.get();
 }
 
-MainWindow::~MainWindow()
-{
-}
+MainWindow::~MainWindow() = default;
 
-<<<<<<< HEAD
-=======
-// 窗口大小变化时自动重绘
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
-void MainWindow::resizeEvent(QResizeEvent *event)
-{
+void MainWindow::resizeEvent(QResizeEvent *event) {
     QMainWindow::resizeEvent(event);
+    pauseButton->move(width() - pauseButton->width() - 20, 12);
     update();
 }
 
-<<<<<<< HEAD
-=======
-// 计算棋盘整体矩形
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
-QRect MainWindow::getBoardRect() const
-{
+QRect MainWindow::getBoardRect() const {
     int w = width();
-    int h = height() - m_boardMargin;
-
+    int h = height() - BOARD_MARGIN;
     int boardPixel = qMin(w, h);
     int x = (w - boardPixel) / 2;
-    int y = m_boardMargin / 2;
-
+    int y = BOARD_MARGIN / 2;
     return QRect(x, y, boardPixel, boardPixel);
 }
 
-int MainWindow::getCellSize() const
-{
-    return getBoardRect().width() / 9;
+int MainWindow::getCellSize() const {
+    return getBoardRect().width() / GameBoard::SIZE;
 }
 
-<<<<<<< HEAD
-=======
-// 网格坐标 → 屏幕坐标
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
-QPoint MainWindow::gridToPos(int x, int y) const
-{
+QPoint MainWindow::gridToPos(int x, int y) const {
     QRect br = getBoardRect();
     int cs = getCellSize();
-    return QPoint(br.x() + x * cs + cs/2, br.y() + y * cs + cs/2);
+    return QPoint(br.x() + x * cs + cs / 2, br.y() + y * cs + cs / 2);
 }
 
-<<<<<<< HEAD
-=======
-// 屏幕坐标 → 网格坐标
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
-QPoint MainWindow::posToGrid(const QPoint &pos) const
-{
+QPointF MainWindow::gridToPosF(float x, float y) const {
     QRect br = getBoardRect();
     int cs = getCellSize();
-    if (cs <= 0) return QPoint(0,0);
+    return QPointF(br.x() + x * cs + cs / 2.0, br.y() + y * cs + cs / 2.0);
+}
+
+QPoint MainWindow::posToGrid(const QPoint &pos) const {
+    QRect br = getBoardRect();
+    int cs = getCellSize();
+    if (cs <= 0) return QPoint(0, 0);
 
     int gx = (pos.x() - br.x()) / cs;
     int gy = (pos.y() - br.y()) / cs;
 
-    gx = qBound(0, gx, 8);
-    gy = qBound(0, gy, 8);
+    gx = qBound(0, gx, GameBoard::SIZE - 1);
+    gy = qBound(0, gy, GameBoard::SIZE - 1);
     return QPoint(gx, gy);
 }
 
-void MainWindow::paintEvent(QPaintEvent *e)
-{
+bool MainWindow::isOutOfBounds(int x, int y) const {
+    return x < 0 || x >= GameBoard::SIZE || y < 0 || y >= GameBoard::SIZE;
+}
+
+Doll* MainWindow::getEnemy() const {
+    return (currPlayer == 1) ? doll2.get() : doll1.get();
+}
+
+void MainWindow::paintEvent(QPaintEvent *e) {
     Q_UNUSED(e);
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
     if (gameEnd) {
         p.setFont(QFont("Arial", 30));
-<<<<<<< HEAD
         p.setPen(Qt::white);
-=======
-        p.setPen(Qt::white);  // 游戏结束文字白色
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
         p.drawText(rect(), Qt::AlignCenter, "游戏结束");
         return;
     }
 
     drawBoard(p);
-    drawDoll(p, doll1, Qt::red);
-    drawDoll(p, doll2, Qt::blue);
+    drawDoll(p, doll1.get(), Qt::red);
+    drawDoll(p, doll2.get(), Qt::blue);
     drawHP(p);
 
-<<<<<<< HEAD
-=======
-    // ========== 这里改成白色 ==========
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
     p.setPen(Qt::white);
     p.setFont(QFont("Arial", 11));
-    p.drawText(10, 25,
-               QString("玩家%1 | 时间:%2秒 | WASD选方向 | 空格发射")
+    p.drawText(10, 25, QString("玩家%1 | 时间:%2秒 | WASD选方向 | 空格发射")
                    .arg(currPlayer).arg(turnTime));
 }
 
-void MainWindow::drawBoard(QPainter &p)
-{
+void MainWindow::drawBoard(QPainter &p) {
     QRect br = getBoardRect();
     int cs = getCellSize();
 
-    for (int y = 0; y < 9; ++y) {
-        for (int x = 0; x < 9; ++x) {
-            QRect r(br.x() + x*cs, br.y() + y*cs, cs, cs);
+    for (int y = 0; y < GameBoard::SIZE; ++y) {
+        for (int x = 0; x < GameBoard::SIZE; ++x) {
+            QRect r(br.x() + x * cs, br.y() + y * cs, cs, cs);
             p.setPen(Qt::black);
-            p.setBrush((x + y) % 2 ? Qt::white : QColor(240,240,240));
+            p.setBrush(Qt::white);
             p.drawRect(r);
 
             Cell c = board->getCell(x, y);
             if (c.isBlock) {
                 p.setBrush(Qt::darkGray);
-                p.drawRect(r.adjusted(4,4,-4,-4));
+                p.drawRect(r.adjusted(4, 4, -4, -4));
             }
             if (c.hasArrow) {
-<<<<<<< HEAD
                 drawArrow(p, r, c.dir, cs);
             }
             if (c.hasChest) {
                 drawChest(p, r, cs);
-=======
-                p.setPen(Qt::blue);
-                QPoint ct = r.center();
-                int len = cs * 0.25;
-                switch (c.dir) {
-                case Right: p.drawLine(ct, ct + QPoint(len,0)); break;
-                case Down:  p.drawLine(ct, ct + QPoint(0,len)); break;
-                case Left:  p.drawLine(ct, ct - QPoint(len,0)); break;
-                case Up:    p.drawLine(ct, ct - QPoint(0,len)); break;
-                default: break;
-                }
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
+            }
+            if (c.hasPortal) {
+                drawPortal(p, r, cs, c.portalDir);
+            }
+            if (c.hasHealthPack) {
+                drawHealthPack(p, r, cs);
             }
         }
     }
 }
 
-<<<<<<< HEAD
-void MainWindow::drawArrow(QPainter &p, const QRect &cellRect, Direction dir, int cellSize)
-{
+void MainWindow::drawPortal(QPainter &p, const QRect &cellRect, int cellSize, PortalDirection dir) {
+    QString imagePath;
+    switch (dir) {
+        case PortalFront: imagePath = ":/正面.png"; break;
+        case PortalLeft:   imagePath = ":/左面.png"; break;
+        case PortalBack:   imagePath = ":/背面.png"; break;
+        case PortalRight:  imagePath = ":/右面.png"; break;
+        default:           imagePath = ":/正面.png";
+    }
+    
+    QPixmap pixmap(imagePath);
+    if (pixmap.isNull()) {
+        QRect doorRect = cellRect.adjusted(cellSize * 0.1, cellSize * 0.1, -cellSize * 0.1, -cellSize * 0.1);
+        p.fillRect(doorRect, QColor(128, 0, 128));
+        p.setPen(Qt::white);
+        p.drawText(doorRect, Qt::AlignCenter, "门");
+        return;
+    }
+    
+    QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+    for (int y = 0; y < img.height(); ++y) {
+        QRgb *row = reinterpret_cast<QRgb*>(img.scanLine(y));
+        for (int x = 0; x < img.width(); ++x) {
+            int r = qRed(row[x]);
+            int g = qGreen(row[x]);
+            int b = qBlue(row[x]);
+            if (r > 230 && g > 230 && b > 230) {
+                row[x] = qRgba(0, 0, 0, 0);
+            }
+        }
+    }
+    QPixmap transparentPixmap = QPixmap::fromImage(img);
+    
+    QPixmap scaledPixmap = transparentPixmap.scaled(cellSize * 0.8, cellSize * 0.8, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    QPoint offset((cellSize - scaledPixmap.width()) / 2, (cellSize - scaledPixmap.height()) / 2);
+    p.drawPixmap(cellRect.topLeft() + offset, scaledPixmap);
+}
+
+void MainWindow::drawArrow(QPainter &p, const QRect &cellRect, Direction dir, int cellSize) {
     QPoint center = cellRect.center();
-    int arrowLength = cellSize * 0.28;
-    int headLength = cellSize * 0.16;
-    int headWidth = cellSize * 0.10;
-    int lineWidth = cellSize * 0.06;
+    const double arrowLength = cellSize * 0.28;
+    const double headLength = cellSize * 0.16;
+    const double headWidth = cellSize * 0.10;
+    const double lineWidth = cellSize * 0.06;
 
     QColor arrowColor(0, 0, 0);
     QPen arrowPen(arrowColor, lineWidth);
@@ -194,86 +208,63 @@ void MainWindow::drawArrow(QPainter &p, const QRect &cellRect, Direction dir, in
     p.setPen(arrowPen);
     p.setBrush(arrowColor);
 
-    QPainterPath path;
-    QPoint arrowTip;
+    QPoint lineStart, lineEnd, arrowTip;
 
     switch (dir) {
-    case Right: {
-        QPoint lineStart(center.x() - arrowLength, center.y());
-        QPoint lineEnd(center.x() + arrowLength * 0.3, center.y());
+    case Right:
+        lineStart = QPoint(center.x() - arrowLength, center.y());
+        lineEnd = QPoint(center.x() + arrowLength * 0.3, center.y());
         arrowTip = center + QPoint(arrowLength, 0);
-
-        path.moveTo(lineStart);
-        path.lineTo(lineEnd);
-        p.drawPath(path);
-
-        QPolygon head;
-        head << arrowTip
-             << QPoint(arrowTip.x() - headLength, arrowTip.y() - headWidth)
-             << QPoint(arrowTip.x() - headLength, arrowTip.y() + headWidth);
-        p.drawPolygon(head);
         break;
-    }
-    case Left: {
-        QPoint lineStart(center.x() + arrowLength, center.y());
-        QPoint lineEnd(center.x() - arrowLength * 0.3, center.y());
+    case Left:
+        lineStart = QPoint(center.x() + arrowLength, center.y());
+        lineEnd = QPoint(center.x() - arrowLength * 0.3, center.y());
         arrowTip = center - QPoint(arrowLength, 0);
-
-        path.moveTo(lineStart);
-        path.lineTo(lineEnd);
-        p.drawPath(path);
-
-        QPolygon head;
-        head << arrowTip
-             << QPoint(arrowTip.x() + headLength, arrowTip.y() - headWidth)
-             << QPoint(arrowTip.x() + headLength, arrowTip.y() + headWidth);
-        p.drawPolygon(head);
         break;
-    }
-    case Down: {
-        QPoint lineStart(center.x(), center.y() - arrowLength);
-        QPoint lineEnd(center.x(), center.y() + arrowLength * 0.3);
+    case Down:
+        lineStart = QPoint(center.x(), center.y() - arrowLength);
+        lineEnd = QPoint(center.x(), center.y() + arrowLength * 0.3);
         arrowTip = center + QPoint(0, arrowLength);
-
-        path.moveTo(lineStart);
-        path.lineTo(lineEnd);
-        p.drawPath(path);
-
-        QPolygon head;
-        head << arrowTip
-             << QPoint(arrowTip.x() - headWidth, arrowTip.y() - headLength)
-             << QPoint(arrowTip.x() + headWidth, arrowTip.y() - headLength);
-        p.drawPolygon(head);
         break;
-    }
-    case Up: {
-        QPoint lineStart(center.x(), center.y() + arrowLength);
-        QPoint lineEnd(center.x(), center.y() - arrowLength * 0.3);
-        arrowTip = center - QPoint(0, arrowLength);
-
-        path.moveTo(lineStart);
-        path.lineTo(lineEnd);
-        p.drawPath(path);
-
-        QPolygon head;
-        head << arrowTip
-             << QPoint(arrowTip.x() - headWidth, arrowTip.y() + headLength)
-             << QPoint(arrowTip.x() + headWidth, arrowTip.y() + headLength);
-        p.drawPolygon(head);
-        break;
-    }
+    case Up:
     default:
+        lineStart = QPoint(center.x(), center.y() + arrowLength);
+        lineEnd = QPoint(center.x(), center.y() - arrowLength * 0.3);
+        arrowTip = center - QPoint(0, arrowLength);
         break;
     }
+
+    p.drawLine(lineStart, lineEnd);
+
+    QPolygon head;
+    switch (dir) {
+    case Right:
+        head << arrowTip << QPoint(arrowTip.x() - headLength, arrowTip.y() - headWidth)
+             << QPoint(arrowTip.x() - headLength, arrowTip.y() + headWidth);
+        break;
+    case Left:
+        head << arrowTip << QPoint(arrowTip.x() + headLength, arrowTip.y() - headWidth)
+             << QPoint(arrowTip.x() + headLength, arrowTip.y() + headWidth);
+        break;
+    case Down:
+        head << arrowTip << QPoint(arrowTip.x() - headWidth, arrowTip.y() - headLength)
+             << QPoint(arrowTip.x() + headWidth, arrowTip.y() - headLength);
+        break;
+    case Up:
+    default:
+        head << arrowTip << QPoint(arrowTip.x() - headWidth, arrowTip.y() + headLength)
+             << QPoint(arrowTip.x() + headWidth, arrowTip.y() + headLength);
+        break;
+    }
+    p.drawPolygon(head);
 }
 
-void MainWindow::drawChest(QPainter &p, const QRect &cellRect, int cellSize)
-{
+void MainWindow::drawChest(QPainter &p, const QRect &cellRect, int cellSize) {
     QPoint center = cellRect.center();
-    int chestWidth = cellSize * 0.5;
-    int chestHeight = cellSize * 0.4;
-    int x = center.x() - chestWidth / 2;
-    int y = center.y() - chestHeight / 2;
+    const int chestWidth = cellSize * 0.5;
+    const int chestHeight = cellSize * 0.4;
+    const int x = center.x() - chestWidth / 2;
+    const int y = center.y() - chestHeight / 2;
 
     QRect chestRect(x, y, chestWidth, chestHeight);
 
@@ -293,172 +284,237 @@ void MainWindow::drawChest(QPainter &p, const QRect &cellRect, int cellSize)
     p.drawRect(center.x() - 3, center.y() - 2, 6, 8);
 }
 
-=======
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
-void MainWindow::drawDoll(QPainter &p, Doll *d, const QColor &color)
-{
-    QPoint pt = gridToPos(d->x, d->y);
+void MainWindow::drawHealthPack(QPainter &p, const QRect &cellRect, int cellSize) {
+    const int radius = cellSize * 0.18;
+    const QPoint center = cellRect.center();
+
+    QRadialGradient gradient(center, radius);
+    gradient.setColorAt(0, QColor(100, 255, 100));
+    gradient.setColorAt(0.7, QColor(30, 180, 30));
+    gradient.setColorAt(1, QColor(0, 120, 0));
+    p.setPen(QPen(QColor(0, 100, 0), 1.5));
+    p.setBrush(gradient);
+    p.drawEllipse(center, radius, radius);
+
+    const int crossW = radius * 0.5;
+    const int crossH = radius * 0.22;
+    p.setBrush(QColor(255, 255, 255, 220));
+    p.setPen(Qt::NoPen);
+    p.drawRoundedRect(QRectF(center.x() - crossH, center.y() - crossW, crossH * 2, crossW * 2), 1, 1);
+    p.drawRoundedRect(QRectF(center.x() - crossW, center.y() - crossH, crossW * 2, crossH * 2), 1, 1);
+}
+
+void MainWindow::drawDoll(QPainter &p, const Doll *d, const QColor &color) {
+    QPointF pt = gridToPosF(d->smoothX, d->smoothY);
     int cs = getCellSize();
-    int r = cs * 0.2;
 
-    p.setBrush(color);
-    p.drawEllipse(pt, r, r);
+    QPixmap sprite;
+    if (d->player == 1) {
+        sprite = getP1Sprite(d->currentDir, d->animFrame);
+    } else {
+        sprite = getP2Sprite(d->currentDir, d->animFrame);
+    }
+
+    if (!sprite.isNull()) {
+        QImage img = sprite.toImage().convertToFormat(QImage::Format_ARGB32);
+        for (int y = 0; y < img.height(); ++y) {
+            QRgb *row = reinterpret_cast<QRgb*>(img.scanLine(y));
+            for (int x = 0; x < img.width(); ++x) {
+                int r = qRed(row[x]);
+                int g = qGreen(row[x]);
+                int b = qBlue(row[x]);
+                if (r > 230 && g > 230 && b > 230) {
+                    row[x] = qRgba(0, 0, 0, 0);
+                }
+            }
+        }
+        QPixmap transparentSprite = QPixmap::fromImage(img);
+
+        QPixmap scaled = transparentSprite.scaled(cs * 0.8, cs * 0.8, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        QPointF offset((cs - scaled.width()) / 2.0, (cs - scaled.height()) / 2.0);
+        p.drawPixmap(QPointF(pt.x() - cs / 2.0, pt.y() - cs / 2.0) + offset, scaled);
+    } else {
+        int r = cs * 0.2;
+        p.setBrush(color);
+        p.drawEllipse(pt, r, r);
+    }
 }
 
-void MainWindow::drawHP(QPainter &p)
-{
-    int w = width();
-    int barW = w * 0.3;
-    int barH = 18;
+void MainWindow::drawHP(QPainter &p) {
+    const int w = width();
+    const int barW = w * 0.3;
+    const int barH = 18;
 
-<<<<<<< HEAD
-=======
-    // 玩家1
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
-    int w1 = barW * doll1->hp / 100;
+    const int w1 = barW * doll1->hp / Doll::INITIAL_HP;
     p.setBrush(Qt::lightGray);
-    p.drawRect(20, height()-40, barW, barH);
+    p.drawRect(20, height() - 40, barW, barH);
     p.setBrush(Qt::red);
-    p.drawRect(20, height()-40, w1, barH);
-<<<<<<< HEAD
+    p.drawRect(20, height() - 40, w1, barH);
     p.setPen(Qt::white);
-    p.drawText(20, height()-15, QString("玩家1 HP: %1 | 加成: %2").arg(doll1->hp).arg(doll1->baseDamage));
+    p.drawText(20, height() - 15, QString("玩家1 HP: %1 | 加成: %2").arg(doll1->hp).arg(doll1->baseDamage));
 
-=======
-    p.setPen(Qt::white); // 血量文字白色
-    p.drawText(20, height()-15, QString("玩家1 HP: %1").arg(doll1->hp));
-
-    // 玩家2
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
-    int w2 = barW * doll2->hp / 100;
-    int px2 = w - barW - 20;
+    const int w2 = barW * doll2->hp / Doll::INITIAL_HP;
+    const int px2 = w - barW - 20;
     p.setBrush(Qt::lightGray);
-    p.drawRect(px2, height()-40, barW, barH);
+    p.drawRect(px2, height() - 40, barW, barH);
     p.setBrush(Qt::blue);
-    p.drawRect(px2, height()-40, w2, barH);
-<<<<<<< HEAD
+    p.drawRect(px2, height() - 40, w2, barH);
     p.setPen(Qt::white);
-    p.drawText(px2, height()-15, QString("玩家2 HP: %1 | 加成: %2").arg(doll2->hp).arg(doll2->baseDamage));
-=======
-    p.setPen(Qt::white); // 血量文字白色
-    p.drawText(px2, height()-15, QString("玩家2 HP: %1").arg(doll2->hp));
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
+    p.drawText(px2, height() - 15, QString("玩家2 HP: %1 | 加成: %2").arg(doll2->hp).arg(doll2->baseDamage));
 }
 
-
-void MainWindow::mousePressEvent(QMouseEvent *e)
-{
-    if (gameEnd || moveTimer->isActive()) return;
+void MainWindow::mousePressEvent(QMouseEvent *e) {
+    if (gameEnd || moveTimer->isActive() || isPaused) return;
     QPoint g = posToGrid(e->pos());
-    board->rotateArrow(g.x(), g.y());
+    
+    Cell cell = board->getCell(g.x(), g.y());
+    if (cell.hasPortal) {
+        board->rotatePortal(g.x(), g.y());
+    } else {
+        board->rotateArrow(g.x(), g.y());
+    }
     update();
 }
 
-void MainWindow::keyPressEvent(QKeyEvent *e)
-{
-    if (gameEnd) return;
+void MainWindow::keyPressEvent(QKeyEvent *e) {
+    if (gameEnd || moveTimer->isActive() || isPaused) return;
 
-    if (e->key() == Qt::Key_W && !moveTimer->isActive())
-        currDoll->setLaunchDirection(Up);
-    if (e->key() == Qt::Key_S && !moveTimer->isActive())
-        currDoll->setLaunchDirection(Down);
-    if (e->key() == Qt::Key_A && !moveTimer->isActive())
-        currDoll->setLaunchDirection(Left);
-    if (e->key() == Qt::Key_D && !moveTimer->isActive())
-        currDoll->setLaunchDirection(Right);
-
-    if (e->key() == Qt::Key_Space && !moveTimer->isActive())
-        launch();
-
+    switch (e->key()) {
+    case Qt::Key_W: currDoll->setLaunchDirection(Up); break;
+    case Qt::Key_S: currDoll->setLaunchDirection(Down); break;
+    case Qt::Key_A: currDoll->setLaunchDirection(Left); break;
+    case Qt::Key_D: currDoll->setLaunchDirection(Right); break;
+    case Qt::Key_Space: launch(); break;
+    }
     update();
 }
 
-void MainWindow::launch()
-{
+void MainWindow::launch() {
     currDoll->arrowCount = 0;
+    currDoll->stepCount = 0;
     currDoll->applyLaunchDirection();
+    currDoll->smoothX = currDoll->x;
+    currDoll->smoothY = currDoll->y;
     currDoll->isMoving = true;
     moveTimer->start();
+    animTimer->start();
 }
 
-void MainWindow::updateMoveAnimation()
-{
-    int oldX = currDoll->x;
-    int oldY = currDoll->y;
+void MainWindow::updateMoveAnimation() {
+    const int oldX = currDoll->x;
+    const int oldY = currDoll->y;
     currDoll->moveStep();
-    int x = currDoll->x;
-    int y = currDoll->y;
+    currDoll->stepCount++;
+    const int x = currDoll->x;
+    const int y = currDoll->y;
 
-    if (x < 0 || x >= 9 || y < 0 || y >= 9) {
+    if (currDoll->stepCount > Doll::MAX_STEPS) {
+        QMessageBox::information(this, "步数超限",
+            QString("角色移动超过 %1 步，疑似陷入循环，本轮行动取消！").arg(Doll::MAX_STEPS));
         currDoll->x = oldX;
         currDoll->y = oldY;
+        currDoll->smoothX = oldX;
+        currDoll->smoothY = oldY;
         currDoll->isMoving = false;
         moveTimer->stop();
-<<<<<<< HEAD
+        animTimer->stop();
         board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
-=======
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
+        board->spawnPortals(doll1->x, doll1->y, doll2->x, doll2->y);
+        switchPlayer();
+        return;
+    }
+
+    if (isOutOfBounds(x, y)) {
+        currDoll->x = oldX;
+        currDoll->y = oldY;
+        currDoll->smoothX = oldX;
+        currDoll->smoothY = oldY;
+        currDoll->isMoving = false;
+        moveTimer->stop();
+        animTimer->stop();
+        board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
+        board->spawnPortals(doll1->x, doll1->y, doll2->x, doll2->y);
         switchPlayer();
         return;
     }
 
     Cell cell = board->getCell(x, y);
-    Doll* enemy = (currPlayer == 1) ? doll2 : doll1;
+    Doll* enemy = getEnemy();
 
     if (cell.isBlock) {
         currDoll->x = oldX;
         currDoll->y = oldY;
+        currDoll->smoothX = oldX;
+        currDoll->smoothY = oldY;
         currDoll->isMoving = false;
         moveTimer->stop();
-<<<<<<< HEAD
+        animTimer->stop();
         board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
-=======
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
+        board->spawnPortals(doll1->x, doll1->y, doll2->x, doll2->y);
         switchPlayer();
         return;
     }
 
-<<<<<<< HEAD
-    if (cell.hasChest) {
-        board->removeChest(x, y);
-        currDoll->baseDamage += 12;
-        QMessageBox::information(this, "获得宝箱", QString("基础伤害 +12！\n当前加成: %1").arg(currDoll->baseDamage));
+    if (cell.hasPortal) {
+        QPoint otherPortal = board->findOtherPortal(x, y);
+        if (otherPortal.x() != -1) {
+            currDoll->x = otherPortal.x();
+            currDoll->y = otherPortal.y();
+            currDoll->smoothX = currDoll->x;
+            currDoll->smoothY = currDoll->y;
+            PortalDirection targetDir = board->getPortalDirection(otherPortal.x(), otherPortal.y());
+            currDoll->currentDir = board->getExitDirection(targetDir);
+        }
     }
 
-=======
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
+    if (cell.hasChest) {
+        board->removeChest(x, y);
+        bool isBig = (QRandomGenerator::global()->bounded(2) == 0);
+        if (isBig) {
+            currDoll->baseDamage += CHEST_BIG_BONUS;
+            currDoll->bigSwordCount++;
+        } else {
+            currDoll->baseDamage += CHEST_SMALL_BONUS;
+            currDoll->smallSwordCount++;
+        }
+        currDoll->chestCollected++;
+    }
+
+    if (cell.hasHealthPack) {
+        board->removeHealthPack(x, y);
+        currDoll->heal(GameBoard::HEALTH_PACK_AMOUNT);
+        currDoll->hpCollected++;
+    }
+
     if (x == enemy->x && y == enemy->y) {
         currDoll->x = oldX;
         currDoll->y = oldY;
+        currDoll->smoothX = oldX;
+        currDoll->smoothY = oldY;
 
-<<<<<<< HEAD
-        int damage = currDoll->arrowCount * 4 + currDoll->baseDamage;
-        enemy->hurt(damage);
+        const int arrowDamage = currDoll->arrowCount * DAMAGE_PER_ARROW;
+        const int totalDamage = arrowDamage + currDoll->baseDamage;
+        enemy->hurt(totalDamage);
 
-        QString damageInfo = QString("途经箭头: %1 × 4 = %2\n基础加成: %3\n总伤害: %4")
+        QString damageInfo = QString("途经箭头: %1 × %2 = %3\n基础加成: %4\n总伤害: %5")
                                  .arg(currDoll->arrowCount)
-                                 .arg(currDoll->arrowCount * 4)
+                                 .arg(DAMAGE_PER_ARROW)
+                                 .arg(arrowDamage)
                                  .arg(currDoll->baseDamage)
-                                 .arg(damage);
+                                 .arg(totalDamage);
         QMessageBox::information(this, "命中", damageInfo);
-=======
-        int damage = currDoll->arrowCount * 2;
-        enemy->hurt(damage);
 
-        QMessageBox::information(this, "命中",
-                                 QString("途经箭头:%1 → 造成伤害:%2")
-                                     .arg(currDoll->arrowCount).arg(damage));
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
-
-        if (doll1->isDead()) gameOver(2);
-        if (doll2->isDead()) gameOver(1);
+        if (doll1->isDead()) {
+            gameOver(2);
+        } else if (doll2->isDead()) {
+            gameOver(1);
+        }
 
         currDoll->isMoving = false;
         moveTimer->stop();
-<<<<<<< HEAD
+        animTimer->stop();
         board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
-=======
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
+        board->spawnPortals(doll1->x, doll1->y, doll2->x, doll2->y);
         switchPlayer();
         return;
     }
@@ -471,41 +527,180 @@ void MainWindow::updateMoveAnimation()
     update();
 }
 
-void MainWindow::updateTurnTimer()
-{
-    if (gameEnd || moveTimer->isActive()) return;
-    if (--turnTime <= 0)
+void MainWindow::updateAnimFrame() {
+    currDoll->smoothX += (currDoll->x - currDoll->smoothX) * 0.4f;
+    currDoll->smoothY += (currDoll->y - currDoll->smoothY) * 0.4f;
+    currDoll->animFrame = (currDoll->animFrame + 1) % 3;
+    update();
+}
+
+void MainWindow::updateTurnTimer() {
+    if (gameEnd || moveTimer->isActive() || isPaused) return;
+    if (--turnTime <= 0) {
         switchPlayer();
+    }
     update();
 }
 
-void MainWindow::switchPlayer()
-{
+void MainWindow::switchPlayer() {
+    Doll* prevDoll = currDoll;
+    
+    if (prevDoll->chestCollected > 0) {
+        const int totalBonus = prevDoll->bigSwordCount * CHEST_BIG_BONUS
+                             + prevDoll->smallSwordCount * CHEST_SMALL_BONUS;
+        QMessageBox::information(this, "获得宝箱",
+            QString("收集了 %1 个宝箱！\n大剑 ×%2 (+%3)\n小剑 ×%4 (+%5)\n总加成: +%6\n当前基础伤害: %7")
+                .arg(prevDoll->chestCollected)
+                .arg(prevDoll->bigSwordCount)
+                .arg(prevDoll->bigSwordCount * CHEST_BIG_BONUS)
+                .arg(prevDoll->smallSwordCount)
+                .arg(prevDoll->smallSwordCount * CHEST_SMALL_BONUS)
+                .arg(totalBonus)
+                .arg(prevDoll->baseDamage));
+        prevDoll->chestCollected = 0;
+        prevDoll->bigSwordCount = 0;
+        prevDoll->smallSwordCount = 0;
+    }
+
+    if (prevDoll->hpCollected > 0) {
+        QMessageBox::information(this, "获得血包",
+            QString("收集了 %1 个血包！\n回复血量 +%2\n当前血量: %3")
+                .arg(prevDoll->hpCollected)
+                .arg(prevDoll->hpCollected * GameBoard::HEALTH_PACK_AMOUNT)
+                .arg(prevDoll->hp));
+        prevDoll->hpCollected = 0;
+    }
+    
     currPlayer = (currPlayer == 1) ? 2 : 1;
-    turnTime = 60;
-    currDoll = (currPlayer == 1) ? doll1 : doll2;
-<<<<<<< HEAD
+    turnTime = TURN_TIME;
+    currDoll = (currPlayer == 1) ? doll1.get() : doll2.get();
     board->spawnArrow(doll1->x, doll1->y, doll2->x, doll2->y);
-=======
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
+
+    turnCounter++;
+    if (turnCounter % 2 == 0) {
+        board->refreshHealthPacks(doll1->x, doll1->y, doll2->x, doll2->y);
+    }
+
     update();
 }
 
-void MainWindow::gameOver(int winner)
-{
+void MainWindow::gameOver(int winner) {
     gameEnd = true;
     QMessageBox::information(this, "游戏结束", QString("玩家%1 胜利！").arg(winner));
     QMessageBox::information(this, "重置", "确定后重新开始");
 
+    restartGame();
+}
+
+void MainWindow::loadP1Sprites() {
+    const char* dirNames[] = { "右面", "正面", "左面", "背面" };
+    for (int d = 0; d < 4; ++d) {
+        for (int f = 0; f < 3; ++f) {
+            QString path = QString(":/p1%1%2.jpg").arg(dirNames[d]).arg(f + 1);
+            p1Sprites[d][f] = QPixmap(path);
+        }
+    }
+}
+
+QPixmap MainWindow::getP1Sprite(Direction dir, int frame) const {
+    int d = static_cast<int>(dir);
+    return p1Sprites[d][frame % 3];
+}
+
+void MainWindow::loadP2Sprites() {
+    const char* dirNames[] = { "右面", "正面", "左面", "背面" };
+    for (int d = 0; d < 4; ++d) {
+        for (int f = 0; f < 3; ++f) {
+            QString path = QString(":/p2%1%2.jpg").arg(dirNames[d]).arg(f + 1);
+            p2Sprites[d][f] = QPixmap(path);
+        }
+    }
+}
+
+QPixmap MainWindow::getP2Sprite(Direction dir, int frame) const {
+    int d = static_cast<int>(dir);
+    return p2Sprites[d][frame % 3];
+}
+
+void MainWindow::restartGame() {
     doll1->reset();
     doll2->reset();
     board->initBoard();
     gameEnd = false;
+    isPaused = false;
     currPlayer = 1;
-    turnTime = 60;
+    turnTime = TURN_TIME;
+    turnCounter = 0;
+    currDoll = doll1.get();
+    turnTimer->start(1000);
+    pauseButton->show();
     update();
-<<<<<<< HEAD
 }
-=======
+
+void MainWindow::pauseGame() {
+    isPaused = true;
+    bool wasMoving = moveTimer->isActive();
+    turnTimer->stop();
+    moveTimer->stop();
+    animTimer->stop();
+    pauseButton->hide();
+
+    QDialog dialog(this);
+    dialog.setWindowTitle("游戏暂停");
+    dialog.setFixedSize(280, 240);
+    dialog.setStyleSheet("QDialog { background-color: #1a1a2e; }");
+
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    layout->setAlignment(Qt::AlignCenter);
+    layout->setSpacing(16);
+
+    QLabel *titleLabel = new QLabel("游戏暂停", &dialog);
+    titleLabel->setAlignment(Qt::AlignCenter);
+    titleLabel->setStyleSheet("color: white; font-size: 22px; font-weight: bold;");
+
+    QPushButton *btnResume = new QPushButton("继续游戏", &dialog);
+    QPushButton *btnRestart = new QPushButton("重新开始", &dialog);
+    QPushButton *btnExit = new QPushButton("结束游戏", &dialog);
+
+    QString btnStyle =
+        "QPushButton { background-color: #16213e; color: white; font-size: 16px; "
+        "border: 2px solid #0f3460; border-radius: 8px; padding: 10px 30px; }"
+        "QPushButton:hover { background-color: #0f3460; }";
+    btnResume->setStyleSheet(btnStyle);
+    btnRestart->setStyleSheet(btnStyle);
+    btnExit->setStyleSheet(btnStyle);
+
+    btnResume->setCursor(Qt::PointingHandCursor);
+    btnRestart->setCursor(Qt::PointingHandCursor);
+    btnExit->setCursor(Qt::PointingHandCursor);
+
+    layout->addWidget(titleLabel);
+    layout->addSpacing(8);
+    layout->addWidget(btnResume);
+    layout->addWidget(btnRestart);
+    layout->addWidget(btnExit);
+
+    int action = 0;
+    connect(btnResume, &QPushButton::clicked, [&]() { action = 1; dialog.accept(); });
+    connect(btnRestart, &QPushButton::clicked, [&]() { action = 2; dialog.accept(); });
+    connect(btnExit, &QPushButton::clicked, [&]() { action = 3; dialog.accept(); });
+
+    dialog.exec();
+
+    isPaused = false;
+    pauseButton->show();
+
+    if (action == 1) {
+        turnTimer->start(1000);
+        if (wasMoving) { moveTimer->start(); animTimer->start(); }
+    } else if (action == 2) {
+        restartGame();
+    } else if (action == 3) {
+        emit returnToStart();
+        close();
+    } else {
+        turnTimer->start(1000);
+        if (wasMoving) { moveTimer->start(); animTimer->start(); }
+    }
+    update();
 }
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc

@@ -306,12 +306,7 @@
 		"D:/Qt/6.8.3/mingw_64/lib/cmake/Qt6/QtPublicWalkLibsHelpers.cmake",
 		"D:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake",
 		"D:/Qt/6.8.3/mingw_64/lib/cmake/Qt6/Qt6Dependencies.cmake",
-<<<<<<< HEAD
-		"D:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/GNUInstallDirs.cmake",
 		"D:/Users/123/Documents/renouqi/resources.qrc"
-=======
-		"D:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/GNUInstallDirs.cmake"
->>>>>>> 668665c50b6398872617da10f73688d7bf3592fc
 	],
 	"CMAKE_SOURCE_DIR" : "D:/Users/123/Documents/renouqi",
 	"CROSS_CONFIG" : false,
@@ -342,12 +337,6 @@
 			"MU",
 			"EWIEGA46WW/moc_mainwindow.cpp",
 			null
-		],
-		[
-			"D:/Users/123/Documents/renouqi/widget.h",
-			"MU",
-			"EWIEGA46WW/moc_widget.cpp",
-			null
 		]
 	],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
@@ -376,6 +365,8 @@
 	],
 	"MOC_INCLUDES" : 
 	[
+		"D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug",
+		"D:/Users/123/Documents/renouqi",
 		"D:/Qt/6.8.3/mingw_64/include/QtCore",
 		"D:/Qt/6.8.3/mingw_64/include",
 		"D:/Qt/6.8.3/mingw_64/mkspecs/win32-g++",
@@ -402,7 +393,7 @@
 	"MOC_PREDEFS_CMD" : 
 	[
 		"D:/Qt/Tools/mingw1310_64/bin/g++.exe",
-		"-std=gnu++17",
+		"-std=gnu++11",
 		"-dM",
 		"-E",
 		"-c",
@@ -425,8 +416,7 @@
 		[ "D:/Users/123/Documents/renouqi/doll.cpp", "MU", null ],
 		[ "D:/Users/123/Documents/renouqi/gameboard.cpp", "MU", null ],
 		[ "D:/Users/123/Documents/renouqi/main.cpp", "MU", null ],
-		[ "D:/Users/123/Documents/renouqi/mainwindow.cpp", "MU", null ],
-		[ "D:/Users/123/Documents/renouqi/widget.cpp", "MU", null ]
+		[ "D:/Users/123/Documents/renouqi/mainwindow.cpp", "MU", null ]
 	],
 	"UIC_OPTIONS" : [],
 	"UIC_SEARCH_PATHS" : [],
