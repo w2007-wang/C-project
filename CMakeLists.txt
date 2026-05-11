@@ -24,6 +24,8 @@ set(PROJECT_SOURCES
         doll.h
         StartWindow.cpp
         StartWindow.h
+        ResultWindow.cpp
+        ResultWindow.h
         resources.qrc
 )
 

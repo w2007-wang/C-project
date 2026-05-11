@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QGraphicsDropShadowEffect>
 
 StartWindow::StartWindow(QWidget *parent)
     : QWidget(parent)
@@ -16,28 +17,78 @@ StartWindow::StartWindow(QWidget *parent)
 
     m_background.load(":/background.npg.jpg");
 
-    QLabel *title = new QLabel("奇偶对决", this);
-    QFont font = title->font();
-    font.setPointSize(40);
-    font.setBold(true);
-    title->setFont(font);
+    QLabel *title = new QLabel(this);
+    QPixmap titlePixmap(":/标题.jpg");
+    if (!titlePixmap.isNull()) {
+        QImage img = titlePixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+        for (int y = 0; y < img.height(); ++y) {
+            QRgb *row = reinterpret_cast<QRgb*>(img.scanLine(y));
+            for (int x = 0; x < img.width(); ++x) {
+                int r = qRed(row[x]);
+                int g = qGreen(row[x]);
+                int b = qBlue(row[x]);
+                if (r > 230 && g > 230 && b > 230) {
+                    row[x] = qRgba(0, 0, 0, 0);
+                } else {
+                    int alpha = 200;
+                    row[x] = qRgba(r, g, b, alpha);
+                }
+            }
+        }
+        QPixmap transparentPixmap = QPixmap::fromImage(img);
+        int titleWidth = w * 0.45;
+        int titleHeight = titleWidth * transparentPixmap.height() / transparentPixmap.width();
+        title->setPixmap(transparentPixmap.scaled(titleWidth, titleHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    }
     title->setAlignment(Qt::AlignCenter);
-    title->setStyleSheet("color: white; text-shadow: 2px 2px 4px black;");
+    title->setStyleSheet("background: transparent;");
+
+    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
+    shadow->setBlurRadius(15);
+    shadow->setColor(QColor(0, 0, 0, 150));
+    shadow->setOffset(2, 2);
+    title->setGraphicsEffect(shadow);
 
     QPushButton *btnStart = new QPushButton("开始游戏", this);
     QPushButton *btnExit  = new QPushButton("退出游戏", this);
 
-    btnStart->setMinimumSize(200, 60);
-    btnExit->setMinimumSize(200, 60);
+    btnStart->setFixedSize(240, 70);
+    btnExit->setFixedSize(240, 70);
+
+    QString btnStyle =
+        "QPushButton {"
+        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+        "    stop:0 rgba(80,80,80,240), stop:1 rgba(50,50,50,240));"
+        "  color: white;"
+        "  font-size: 20px;"
+        "  font-weight: bold;"
+        "  border: 2px solid rgba(100,100,100,255);"
+        "  border-radius: 12px;"
+        "}"
+        "QPushButton:hover {"
+        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+        "    stop:0 rgba(100,100,100,240), stop:1 rgba(70,70,70,240));"
+        "  border: 2px solid rgba(150,150,150,200);"
+        "}"
+        "QPushButton:pressed {"
+        "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+        "    stop:0 rgba(40,40,40,240), stop:1 rgba(30,30,30,240));"
+        "}";
+
+    btnStart->setStyleSheet(btnStyle);
+    btnExit->setStyleSheet(btnStyle);
+
+    btnStart->setCursor(Qt::PointingHandCursor);
+    btnExit->setCursor(Qt::PointingHandCursor);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->addStretch(1);
-    layout->addWidget(title);
-    layout->addSpacing(50);
-    layout->addWidget(btnStart, 0, Qt::AlignCenter);
-    layout->addSpacing(20);
-    layout->addWidget(btnExit, 0, Qt::AlignCenter);
     layout->addStretch(2);
+    layout->addWidget(title);
+    layout->addSpacing(60);
+    layout->addWidget(btnStart, 0, Qt::AlignCenter);
+    layout->addSpacing(24);
+    layout->addWidget(btnExit, 0, Qt::AlignCenter);
+    layout->addStretch(3);
 
     setLayout(layout);
 

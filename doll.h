@@ -28,6 +28,9 @@ public:
     int animFrame = 0;
     float smoothX = PLAYER1_START_X;
     float smoothY = PLAYER1_START_Y;
+    float stepStartX = PLAYER1_START_X;
+    float stepStartY = PLAYER1_START_Y;
+    float stepProgress = 0.0f;
 
     explicit Doll(int player);
     ~Doll() = default;

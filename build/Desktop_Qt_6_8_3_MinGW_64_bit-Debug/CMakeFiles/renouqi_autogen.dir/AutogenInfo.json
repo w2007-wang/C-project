@@ -315,6 +315,12 @@
 	"HEADERS" : 
 	[
 		[
+			"D:/Users/123/Documents/renouqi/ResultWindow.h",
+			"MU",
+			"EWIEGA46WW/moc_ResultWindow.cpp",
+			null
+		],
+		[
 			"D:/Users/123/Documents/renouqi/StartWindow.h",
 			"MU",
 			"EWIEGA46WW/moc_StartWindow.cpp",
@@ -412,6 +418,7 @@
 	"SETTINGS_FILE" : "D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/CMakeFiles/renouqi_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
+		[ "D:/Users/123/Documents/renouqi/ResultWindow.cpp", "MU", null ],
 		[ "D:/Users/123/Documents/renouqi/StartWindow.cpp", "MU", null ],
 		[ "D:/Users/123/Documents/renouqi/doll.cpp", "MU", null ],
 		[ "D:/Users/123/Documents/renouqi/gameboard.cpp", "MU", null ],

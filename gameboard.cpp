@@ -150,9 +150,9 @@ PortalDirection GameBoard::getPortalDirection(int x, int y) const {
 Direction GameBoard::getExitDirection(PortalDirection dir) const {
     switch (dir) {
         case PortalFront: return Down;
-        case PortalLeft: return Left;
-        case PortalRight: return Up;
-        case PortalBack: return Up;
+        case PortalLeft:   return Left;
+        case PortalRight:  return Right;
+        case PortalBack:   return Up;
         default: return Down;
     }
 }

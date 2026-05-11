@@ -17,6 +17,7 @@ void Doll::reset() {
     smallSwordCount = 0;
     hpCollected = 0;
     animFrame = 0;
+    stepProgress = 0.0f;
 
     if (player == 1) {
         setStartPos(PLAYER1_START_X, PLAYER1_START_Y);
@@ -30,6 +31,8 @@ void Doll::setStartPos(int x, int y) {
     this->y = y;
     smoothX = x;
     smoothY = y;
+    stepStartX = x;
+    stepStartY = y;
 }
 
 void Doll::setLaunchDirection(Direction dir) {

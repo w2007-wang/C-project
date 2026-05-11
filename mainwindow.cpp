@@ -25,10 +25,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     turnTimer->start(1000);
     connect(turnTimer, &QTimer::timeout, this, &MainWindow::updateTurnTimer);
 
-    moveTimer = new QTimer(this);
-    moveTimer->setInterval(MOVE_INTERVAL);
-    connect(moveTimer, &QTimer::timeout, this, &MainWindow::updateMoveAnimation);
-
     animTimer = new QTimer(this);
     animTimer->setInterval(ANIM_INTERVAL);
     connect(animTimer, &QTimer::timeout, this, &MainWindow::updateAnimFrame);
@@ -107,6 +103,12 @@ void MainWindow::paintEvent(QPaintEvent *e) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
+    static QPixmap bgImage(":/背景3.jpg");
+    if (!bgImage.isNull()) {
+        p.drawPixmap(rect(), bgImage.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+        p.fillRect(rect(), QColor(255, 255, 255, 80));
+    }
+
     if (gameEnd) {
         p.setFont(QFont("Arial", 30));
         p.setPen(Qt::white);
@@ -129,20 +131,22 @@ void MainWindow::drawBoard(QPainter &p) {
     QRect br = getBoardRect();
     int cs = getCellSize();
 
+    QPixmap bgImage(":/背景1.jpg");
+    if (!bgImage.isNull()) {
+        p.drawPixmap(br, bgImage.scaled(br.size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+    }
+
     for (int y = 0; y < GameBoard::SIZE; ++y) {
         for (int x = 0; x < GameBoard::SIZE; ++x) {
             QRect r(br.x() + x * cs, br.y() + y * cs, cs, cs);
             p.setPen(Qt::black);
-            p.setBrush(Qt::white);
+            p.setBrush(QColor(255, 255, 255, 80));
             p.drawRect(r);
 
             Cell c = board->getCell(x, y);
             if (c.isBlock) {
                 p.setBrush(Qt::darkGray);
                 p.drawRect(r.adjusted(4, 4, -4, -4));
-            }
-            if (c.hasArrow) {
-                drawArrow(p, r, c.dir, cs);
             }
             if (c.hasChest) {
                 drawChest(p, r, cs);
@@ -152,6 +156,9 @@ void MainWindow::drawBoard(QPainter &p) {
             }
             if (c.hasHealthPack) {
                 drawHealthPack(p, r, cs);
+            }
+            if (c.hasArrow) {
+                drawArrow(p, r, c.dir, cs);
             }
         }
     }
@@ -197,14 +204,14 @@ void MainWindow::drawPortal(QPainter &p, const QRect &cellRect, int cellSize, Po
 
 void MainWindow::drawArrow(QPainter &p, const QRect &cellRect, Direction dir, int cellSize) {
     QPoint center = cellRect.center();
-    const double arrowLength = cellSize * 0.28;
-    const double headLength = cellSize * 0.16;
+    const double totalLength = cellSize * 0.35;
+    const double headLength = cellSize * 0.14;
     const double headWidth = cellSize * 0.10;
-    const double lineWidth = cellSize * 0.06;
+    const double lineWidth = cellSize * 0.04;
 
     QColor arrowColor(0, 0, 0);
     QPen arrowPen(arrowColor, lineWidth);
-    arrowPen.setCapStyle(Qt::RoundCap);
+    arrowPen.setCapStyle(Qt::SquareCap);
     p.setPen(arrowPen);
     p.setBrush(arrowColor);
 
@@ -212,25 +219,25 @@ void MainWindow::drawArrow(QPainter &p, const QRect &cellRect, Direction dir, in
 
     switch (dir) {
     case Right:
-        lineStart = QPoint(center.x() - arrowLength, center.y());
-        lineEnd = QPoint(center.x() + arrowLength * 0.3, center.y());
-        arrowTip = center + QPoint(arrowLength, 0);
+        arrowTip = QPoint(center.x() + totalLength * 0.5, center.y());
+        lineEnd = QPoint(arrowTip.x() - headLength, center.y());
+        lineStart = QPoint(center.x() - totalLength * 0.6, center.y());
         break;
     case Left:
-        lineStart = QPoint(center.x() + arrowLength, center.y());
-        lineEnd = QPoint(center.x() - arrowLength * 0.3, center.y());
-        arrowTip = center - QPoint(arrowLength, 0);
+        arrowTip = QPoint(center.x() - totalLength * 0.5, center.y());
+        lineEnd = QPoint(arrowTip.x() + headLength, center.y());
+        lineStart = QPoint(center.x() + totalLength * 0.6, center.y());
         break;
     case Down:
-        lineStart = QPoint(center.x(), center.y() - arrowLength);
-        lineEnd = QPoint(center.x(), center.y() + arrowLength * 0.3);
-        arrowTip = center + QPoint(0, arrowLength);
+        arrowTip = QPoint(center.x(), center.y() + totalLength * 0.5);
+        lineEnd = QPoint(center.x(), arrowTip.y() - headLength);
+        lineStart = QPoint(center.x(), center.y() - totalLength * 0.6);
         break;
     case Up:
     default:
-        lineStart = QPoint(center.x(), center.y() + arrowLength);
-        lineEnd = QPoint(center.x(), center.y() - arrowLength * 0.3);
-        arrowTip = center - QPoint(0, arrowLength);
+        arrowTip = QPoint(center.x(), center.y() - totalLength * 0.5);
+        lineEnd = QPoint(center.x(), arrowTip.y() + headLength);
+        lineStart = QPoint(center.x(), center.y() + totalLength * 0.6);
         break;
     }
 
@@ -239,21 +246,25 @@ void MainWindow::drawArrow(QPainter &p, const QRect &cellRect, Direction dir, in
     QPolygon head;
     switch (dir) {
     case Right:
-        head << arrowTip << QPoint(arrowTip.x() - headLength, arrowTip.y() - headWidth)
-             << QPoint(arrowTip.x() - headLength, arrowTip.y() + headWidth);
+        head << arrowTip
+             << QPoint(lineEnd.x(), arrowTip.y() - headWidth)
+             << QPoint(lineEnd.x(), arrowTip.y() + headWidth);
         break;
     case Left:
-        head << arrowTip << QPoint(arrowTip.x() + headLength, arrowTip.y() - headWidth)
-             << QPoint(arrowTip.x() + headLength, arrowTip.y() + headWidth);
+        head << arrowTip
+             << QPoint(lineEnd.x(), arrowTip.y() - headWidth)
+             << QPoint(lineEnd.x(), arrowTip.y() + headWidth);
         break;
     case Down:
-        head << arrowTip << QPoint(arrowTip.x() - headWidth, arrowTip.y() - headLength)
-             << QPoint(arrowTip.x() + headWidth, arrowTip.y() - headLength);
+        head << arrowTip
+             << QPoint(arrowTip.x() - headWidth, lineEnd.y())
+             << QPoint(arrowTip.x() + headWidth, lineEnd.y());
         break;
     case Up:
     default:
-        head << arrowTip << QPoint(arrowTip.x() - headWidth, arrowTip.y() + headLength)
-             << QPoint(arrowTip.x() + headWidth, arrowTip.y() + headLength);
+        head << arrowTip
+             << QPoint(arrowTip.x() - headWidth, lineEnd.y())
+             << QPoint(arrowTip.x() + headWidth, lineEnd.y());
         break;
     }
     p.drawPolygon(head);
@@ -364,7 +375,7 @@ void MainWindow::drawHP(QPainter &p) {
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *e) {
-    if (gameEnd || moveTimer->isActive() || isPaused) return;
+    if (gameEnd || currDoll->isMoving || isPaused) return;
     QPoint g = posToGrid(e->pos());
     
     Cell cell = board->getCell(g.x(), g.y());
@@ -377,7 +388,7 @@ void MainWindow::mousePressEvent(QMouseEvent *e) {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *e) {
-    if (gameEnd || moveTimer->isActive() || isPaused) return;
+    if (gameEnd || currDoll->isMoving || isPaused) return;
 
     switch (e->key()) {
     case Qt::Key_W: currDoll->setLaunchDirection(Up); break;
@@ -393,82 +404,76 @@ void MainWindow::launch() {
     currDoll->arrowCount = 0;
     currDoll->stepCount = 0;
     currDoll->applyLaunchDirection();
+    currDoll->stepStartX = currDoll->x;
+    currDoll->stepStartY = currDoll->y;
     currDoll->smoothX = currDoll->x;
     currDoll->smoothY = currDoll->y;
+    currDoll->stepProgress = 0.0f;
     currDoll->isMoving = true;
-    moveTimer->start();
+    animCounter = 0;
+
+    if (!processStep()) {
+        return;
+    }
+
     animTimer->start();
 }
 
-void MainWindow::updateMoveAnimation() {
+bool MainWindow::processStep() {
     const int oldX = currDoll->x;
     const int oldY = currDoll->y;
-    currDoll->moveStep();
-    currDoll->stepCount++;
-    const int x = currDoll->x;
-    const int y = currDoll->y;
+    int visualStartX = oldX;
+    int visualStartY = oldY;
 
     if (currDoll->stepCount > Doll::MAX_STEPS) {
         QMessageBox::information(this, "步数超限",
             QString("角色移动超过 %1 步，疑似陷入循环，本轮行动取消！").arg(Doll::MAX_STEPS));
-        currDoll->x = oldX;
-        currDoll->y = oldY;
-        currDoll->smoothX = oldX;
-        currDoll->smoothY = oldY;
-        currDoll->isMoving = false;
-        moveTimer->stop();
-        animTimer->stop();
-        board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
-        board->spawnPortals(doll1->x, doll1->y, doll2->x, doll2->y);
-        switchPlayer();
-        return;
+        stopMovingAndSwitch();
+        return false;
     }
 
-    if (isOutOfBounds(x, y)) {
-        currDoll->x = oldX;
-        currDoll->y = oldY;
-        currDoll->smoothX = oldX;
-        currDoll->smoothY = oldY;
-        currDoll->isMoving = false;
-        moveTimer->stop();
-        animTimer->stop();
-        board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
-        board->spawnPortals(doll1->x, doll1->y, doll2->x, doll2->y);
-        switchPlayer();
-        return;
+    int nextX = oldX;
+    int nextY = oldY;
+    switch (currDoll->currentDir) {
+    case Right: nextX++; break;
+    case Down:  nextY++; break;
+    case Left:  nextX--; break;
+    case Up:    nextY--; break;
     }
 
-    Cell cell = board->getCell(x, y);
-    Doll* enemy = getEnemy();
+    if (isOutOfBounds(nextX, nextY)) {
+        stopMovingAndSwitch();
+        return false;
+    }
 
+    Cell cell = board->getCell(nextX, nextY);
     if (cell.isBlock) {
-        currDoll->x = oldX;
-        currDoll->y = oldY;
-        currDoll->smoothX = oldX;
-        currDoll->smoothY = oldY;
-        currDoll->isMoving = false;
-        moveTimer->stop();
-        animTimer->stop();
-        board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
-        board->spawnPortals(doll1->x, doll1->y, doll2->x, doll2->y);
-        switchPlayer();
-        return;
+        stopMovingAndSwitch();
+        return false;
     }
+
+    currDoll->x = nextX;
+    currDoll->y = nextY;
+    currDoll->stepCount++;
 
     if (cell.hasPortal) {
-        QPoint otherPortal = board->findOtherPortal(x, y);
+        QPoint otherPortal = board->findOtherPortal(nextX, nextY);
         if (otherPortal.x() != -1) {
             currDoll->x = otherPortal.x();
             currDoll->y = otherPortal.y();
-            currDoll->smoothX = currDoll->x;
-            currDoll->smoothY = currDoll->y;
             PortalDirection targetDir = board->getPortalDirection(otherPortal.x(), otherPortal.y());
             currDoll->currentDir = board->getExitDirection(targetDir);
+            currDoll->animFrame = 0;
+            visualStartX = currDoll->x;
+            visualStartY = currDoll->y;
+            currDoll->smoothX = currDoll->x;
+            currDoll->smoothY = currDoll->y;
+            currDoll->stepProgress = 1.0f;
         }
     }
 
     if (cell.hasChest) {
-        board->removeChest(x, y);
+        board->removeChest(currDoll->x, currDoll->y);
         bool isBig = (QRandomGenerator::global()->bounded(2) == 0);
         if (isBig) {
             currDoll->baseDamage += CHEST_BIG_BONUS;
@@ -481,12 +486,13 @@ void MainWindow::updateMoveAnimation() {
     }
 
     if (cell.hasHealthPack) {
-        board->removeHealthPack(x, y);
+        board->removeHealthPack(currDoll->x, currDoll->y);
         currDoll->heal(GameBoard::HEALTH_PACK_AMOUNT);
         currDoll->hpCollected++;
     }
 
-    if (x == enemy->x && y == enemy->y) {
+    Doll *enemy = getEnemy();
+    if (currDoll->x == enemy->x && currDoll->y == enemy->y) {
         currDoll->x = oldX;
         currDoll->y = oldY;
         currDoll->smoothX = oldX;
@@ -510,32 +516,55 @@ void MainWindow::updateMoveAnimation() {
             gameOver(1);
         }
 
-        currDoll->isMoving = false;
-        moveTimer->stop();
-        animTimer->stop();
-        board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
-        board->spawnPortals(doll1->x, doll1->y, doll2->x, doll2->y);
-        switchPlayer();
-        return;
+        stopMovingAndSwitch();
+        return false;
     }
 
     if (cell.hasArrow) {
-        currDoll->currentDir = cell.dir;
         currDoll->arrowCount++;
+        if (cell.dir != currDoll->currentDir) {
+            currDoll->currentDir = cell.dir;
+            currDoll->animFrame = 0;
+        }
     }
 
-    update();
+    currDoll->stepStartX = visualStartX;
+    currDoll->stepStartY = visualStartY;
+    return true;
 }
 
 void MainWindow::updateAnimFrame() {
-    currDoll->smoothX += (currDoll->x - currDoll->smoothX) * 0.4f;
-    currDoll->smoothY += (currDoll->y - currDoll->smoothY) * 0.4f;
-    currDoll->animFrame = (currDoll->animFrame + 1) % 3;
+    currDoll->stepProgress += (float)ANIM_INTERVAL / STEP_DURATION;
+
+    if (currDoll->stepProgress >= 1.0f) {
+        currDoll->stepProgress -= 1.0f;
+        if (!processStep()) {
+            return;
+        }
+    }
+
+    float t = qMin(currDoll->stepProgress, 1.0f);
+    currDoll->smoothX = currDoll->stepStartX + (currDoll->x - currDoll->stepStartX) * t;
+    currDoll->smoothY = currDoll->stepStartY + (currDoll->y - currDoll->stepStartY) * t;
+
+    if (++animCounter >= 3) {
+        animCounter = 0;
+        currDoll->animFrame = (currDoll->animFrame + 1) % 3;
+    }
     update();
 }
 
+void MainWindow::stopMovingAndSwitch() {
+    currDoll->isMoving = false;
+    currDoll->animFrame = 0;
+    animTimer->stop();
+    board->refreshArrows(doll1->x, doll1->y, doll2->x, doll2->y);
+    board->spawnPortals(doll1->x, doll1->y, doll2->x, doll2->y);
+    switchPlayer();
+}
+
 void MainWindow::updateTurnTimer() {
-    if (gameEnd || moveTimer->isActive() || isPaused) return;
+    if (gameEnd || currDoll->isMoving || isPaused) return;
     if (--turnTime <= 0) {
         switchPlayer();
     }
@@ -574,6 +603,7 @@ void MainWindow::switchPlayer() {
     currPlayer = (currPlayer == 1) ? 2 : 1;
     turnTime = TURN_TIME;
     currDoll = (currPlayer == 1) ? doll1.get() : doll2.get();
+    currDoll->animFrame = 0;
     board->spawnArrow(doll1->x, doll1->y, doll2->x, doll2->y);
 
     turnCounter++;
@@ -586,10 +616,9 @@ void MainWindow::switchPlayer() {
 
 void MainWindow::gameOver(int winner) {
     gameEnd = true;
-    QMessageBox::information(this, "游戏结束", QString("玩家%1 胜利！").arg(winner));
-    QMessageBox::information(this, "重置", "确定后重新开始");
-
-    restartGame();
+    QTimer::singleShot(100, this, [this, winner]() {
+        emit showResult(winner);
+    });
 }
 
 void MainWindow::loadP1Sprites() {
@@ -639,9 +668,8 @@ void MainWindow::restartGame() {
 
 void MainWindow::pauseGame() {
     isPaused = true;
-    bool wasMoving = moveTimer->isActive();
+    bool wasMoving = currDoll->isMoving;
     turnTimer->stop();
-    moveTimer->stop();
     animTimer->stop();
     pauseButton->hide();
 
@@ -692,7 +720,7 @@ void MainWindow::pauseGame() {
 
     if (action == 1) {
         turnTimer->start(1000);
-        if (wasMoving) { moveTimer->start(); animTimer->start(); }
+        if (wasMoving) { animTimer->start(); }
     } else if (action == 2) {
         restartGame();
     } else if (action == 3) {
@@ -700,7 +728,7 @@ void MainWindow::pauseGame() {
         close();
     } else {
         turnTimer->start(1000);
-        if (wasMoving) { moveTimer->start(); animTimer->start(); }
+        if (wasMoving) { animTimer->start(); }
     }
     update();
 }

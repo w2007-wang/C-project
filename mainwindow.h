@@ -18,17 +18,19 @@ class MainWindow : public QMainWindow
 public:
     static constexpr int BOARD_MARGIN = 80;
     static constexpr int TURN_TIME = 60;
-    static constexpr int MOVE_INTERVAL = 275;
-    static constexpr int ANIM_INTERVAL = 90;
+    static constexpr int STEP_DURATION = 160;
+    static constexpr int ANIM_INTERVAL = 16;
     static constexpr int DAMAGE_PER_ARROW = 4;
     static constexpr int CHEST_SMALL_BONUS = 12;
     static constexpr int CHEST_BIG_BONUS = 20;
 
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
+    void restartGame();
 
 signals:
     void returnToStart();
+    void showResult(int winner);
 
 protected:
     void paintEvent(QPaintEvent *e) override;
@@ -38,11 +40,10 @@ protected:
 
 private slots:
     void updateTurnTimer();
-    void updateMoveAnimation();
+    void updateAnimFrame();
     void switchPlayer();
     void gameOver(int winner);
     void pauseGame();
-    void updateAnimFrame();
 
 private:
     QRect getBoardRect() const;
@@ -59,7 +60,8 @@ private:
     void drawDoll(QPainter &p, const Doll *d, const QColor &color);
     void drawHP(QPainter &p);
     void launch();
-    void restartGame();
+    bool processStep();
+    void stopMovingAndSwitch();
     void loadP1Sprites();
     QPixmap getP1Sprite(Direction dir, int frame) const;
     void loadP2Sprites();
@@ -74,12 +76,12 @@ private:
     Doll *currDoll = nullptr;
 
     QTimer *turnTimer = nullptr;
-    QTimer *moveTimer = nullptr;
     QTimer *animTimer = nullptr;
     QPushButton *pauseButton = nullptr;
     int turnTime = TURN_TIME;
     int currPlayer = 1;
     int turnCounter = 0;
+    int animCounter = 0;
     bool gameEnd = false;
     bool isPaused = false;
     QPixmap p1Sprites[4][3];

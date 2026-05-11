@@ -569,6 +569,8 @@ renouqi_autogen/timestamp: \
 	D:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/vadefs.h \
 	D:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
 	D:/Users/123/Documents/renouqi/CMakeLists.txt \
+	D:/Users/123/Documents/renouqi/ResultWindow.cpp \
+	D:/Users/123/Documents/renouqi/ResultWindow.h \
 	D:/Users/123/Documents/renouqi/StartWindow.cpp \
 	D:/Users/123/Documents/renouqi/StartWindow.h \
 	D:/Users/123/Documents/renouqi/build/Desktop_Qt_6_8_3_MinGW_64_bit-Debug/.qtc/package-manager/auto-setup.cmake \
