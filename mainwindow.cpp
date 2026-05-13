@@ -10,6 +10,17 @@
 #include <QRandomGenerator>
 #include <cmath>
 
+namespace {
+    constexpr int BOARD_MARGIN = 80;
+    constexpr int TURN_TIME = 60;
+    constexpr int STEP_DURATION = 160;
+    constexpr int ANIM_INTERVAL = 16;
+    constexpr int DAMAGE_PER_ARROW = 4;
+    constexpr int CHEST_SMALL_BONUS = 12;
+    constexpr int CHEST_BIG_BONUS = 20;
+}
+
+// 构造函数：初始化游戏窗口，创建棋盘、人偶、双计时器
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QRect screenRect = QGuiApplication::primaryScreen()->geometry();
     int w = screenRect.width() * 3 / 4;
@@ -21,10 +32,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     doll1 = std::make_unique<Doll>(1);
     doll2 = std::make_unique<Doll>(2);
 
+    // 回合计时器：每秒触发一次，实现60秒倒计时
     turnTimer = new QTimer(this);
     turnTimer->start(1000);
     connect(turnTimer, &QTimer::timeout, this, &MainWindow::updateTurnTimer);
 
+    // 动画计时器：每16毫秒触发一次，驱动平滑移动
     animTimer = new QTimer(this);
     animTimer->setInterval(ANIM_INTERVAL);
     connect(animTimer, &QTimer::timeout, this, &MainWindow::updateAnimFrame);
@@ -46,12 +59,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 MainWindow::~MainWindow() = default;
 
+// 窗口大小改变时调用，调整暂停按钮位置
 void MainWindow::resizeEvent(QResizeEvent *event) {
     QMainWindow::resizeEvent(event);
     pauseButton->move(width() - pauseButton->width() - 20, 12);
     update();
 }
 
+// 计算棋盘在窗口中的矩形区域（始终正方形，水平居中）
 QRect MainWindow::getBoardRect() const {
     int w = width();
     int h = height() - BOARD_MARGIN;
@@ -61,22 +76,26 @@ QRect MainWindow::getBoardRect() const {
     return QRect(x, y, boardPixel, boardPixel);
 }
 
+// 计算单个格子的像素大小
 int MainWindow::getCellSize() const {
     return getBoardRect().width() / GameBoard::SIZE;
 }
 
+// 将网格坐标转换为屏幕像素坐标
 QPoint MainWindow::gridToPos(int x, int y) const {
     QRect br = getBoardRect();
     int cs = getCellSize();
     return QPoint(br.x() + x * cs + cs / 2, br.y() + y * cs + cs / 2);
 }
 
+// 将浮点网格坐标转换为屏幕像素坐标（用于平滑动画）
 QPointF MainWindow::gridToPosF(float x, float y) const {
     QRect br = getBoardRect();
     int cs = getCellSize();
     return QPointF(br.x() + x * cs + cs / 2.0, br.y() + y * cs + cs / 2.0);
 }
 
+// 将屏幕像素坐标转换为网格坐标
 QPoint MainWindow::posToGrid(const QPoint &pos) const {
     QRect br = getBoardRect();
     int cs = getCellSize();
@@ -90,14 +109,17 @@ QPoint MainWindow::posToGrid(const QPoint &pos) const {
     return QPoint(gx, gy);
 }
 
+// 判断坐标是否超出棋盘边界
 bool MainWindow::isOutOfBounds(int x, int y) const {
     return x < 0 || x >= GameBoard::SIZE || y < 0 || y >= GameBoard::SIZE;
 }
 
+// 获取对手人偶指针
 Doll* MainWindow::getEnemy() const {
     return (currPlayer == 1) ? doll2.get() : doll1.get();
 }
 
+// 游戏主渲染函数，每次重绘时调用
 void MainWindow::paintEvent(QPaintEvent *e) {
     Q_UNUSED(e);
     QPainter p(this);
@@ -127,6 +149,7 @@ void MainWindow::paintEvent(QPaintEvent *e) {
                    .arg(currPlayer).arg(turnTime));
 }
 
+// 绘制棋盘及其所有元素
 void MainWindow::drawBoard(QPainter &p) {
     QRect br = getBoardRect();
     int cs = getCellSize();
@@ -164,6 +187,7 @@ void MainWindow::drawBoard(QPainter &p) {
     }
 }
 
+// 绘制传送门
 void MainWindow::drawPortal(QPainter &p, const QRect &cellRect, int cellSize, PortalDirection dir) {
     QString imagePath;
     switch (dir) {
@@ -173,7 +197,7 @@ void MainWindow::drawPortal(QPainter &p, const QRect &cellRect, int cellSize, Po
         case PortalRight:  imagePath = ":/右面.png"; break;
         default:           imagePath = ":/正面.png";
     }
-    
+
     QPixmap pixmap(imagePath);
     if (pixmap.isNull()) {
         QRect doorRect = cellRect.adjusted(cellSize * 0.1, cellSize * 0.1, -cellSize * 0.1, -cellSize * 0.1);
@@ -182,7 +206,7 @@ void MainWindow::drawPortal(QPainter &p, const QRect &cellRect, int cellSize, Po
         p.drawText(doorRect, Qt::AlignCenter, "门");
         return;
     }
-    
+
     QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
     for (int y = 0; y < img.height(); ++y) {
         QRgb *row = reinterpret_cast<QRgb*>(img.scanLine(y));
@@ -196,12 +220,13 @@ void MainWindow::drawPortal(QPainter &p, const QRect &cellRect, int cellSize, Po
         }
     }
     QPixmap transparentPixmap = QPixmap::fromImage(img);
-    
+
     QPixmap scaledPixmap = transparentPixmap.scaled(cellSize * 0.8, cellSize * 0.8, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     QPoint offset((cellSize - scaledPixmap.width()) / 2, (cellSize - scaledPixmap.height()) / 2);
     p.drawPixmap(cellRect.topLeft() + offset, scaledPixmap);
 }
 
+// 绘制箭头
 void MainWindow::drawArrow(QPainter &p, const QRect &cellRect, Direction dir, int cellSize) {
     QPoint center = cellRect.center();
     const double totalLength = cellSize * 0.35;
@@ -270,6 +295,7 @@ void MainWindow::drawArrow(QPainter &p, const QRect &cellRect, Direction dir, in
     p.drawPolygon(head);
 }
 
+// 绘制宝箱
 void MainWindow::drawChest(QPainter &p, const QRect &cellRect, int cellSize) {
     QPoint center = cellRect.center();
     const int chestWidth = cellSize * 0.5;
@@ -295,6 +321,7 @@ void MainWindow::drawChest(QPainter &p, const QRect &cellRect, int cellSize) {
     p.drawRect(center.x() - 3, center.y() - 2, 6, 8);
 }
 
+// 绘制血包
 void MainWindow::drawHealthPack(QPainter &p, const QRect &cellRect, int cellSize) {
     const int radius = cellSize * 0.18;
     const QPoint center = cellRect.center();
@@ -315,6 +342,7 @@ void MainWindow::drawHealthPack(QPainter &p, const QRect &cellRect, int cellSize
     p.drawRoundedRect(QRectF(center.x() - crossW, center.y() - crossH, crossW * 2, crossH * 2), 1, 1);
 }
 
+// 绘制人偶
 void MainWindow::drawDoll(QPainter &p, const Doll *d, const QColor &color) {
     QPointF pt = gridToPosF(d->smoothX, d->smoothY);
     int cs = getCellSize();
@@ -351,6 +379,7 @@ void MainWindow::drawDoll(QPainter &p, const Doll *d, const QColor &color) {
     }
 }
 
+// 绘制血量条
 void MainWindow::drawHP(QPainter &p) {
     const int w = width();
     const int barW = w * 0.3;
@@ -374,10 +403,11 @@ void MainWindow::drawHP(QPainter &p) {
     p.drawText(px2, height() - 15, QString("玩家2 HP: %1 | 加成: %2").arg(doll2->hp).arg(doll2->baseDamage));
 }
 
+// 鼠标点击事件：旋转箭头或传送门
 void MainWindow::mousePressEvent(QMouseEvent *e) {
     if (gameEnd || currDoll->isMoving || isPaused) return;
     QPoint g = posToGrid(e->pos());
-    
+
     Cell cell = board->getCell(g.x(), g.y());
     if (cell.hasPortal) {
         board->rotatePortal(g.x(), g.y());
@@ -387,6 +417,7 @@ void MainWindow::mousePressEvent(QMouseEvent *e) {
     update();
 }
 
+// 键盘按键事件：WASD设置方向，空格发射
 void MainWindow::keyPressEvent(QKeyEvent *e) {
     if (gameEnd || currDoll->isMoving || isPaused) return;
 
@@ -400,6 +431,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e) {
     update();
 }
 
+// 发射人偶
 void MainWindow::launch() {
     currDoll->arrowCount = 0;
     currDoll->stepCount = 0;
@@ -419,6 +451,7 @@ void MainWindow::launch() {
     animTimer->start();
 }
 
+// 处理单步移动逻辑
 bool MainWindow::processStep() {
     const int oldX = currDoll->x;
     const int oldY = currDoll->y;
@@ -533,6 +566,7 @@ bool MainWindow::processStep() {
     return true;
 }
 
+// 动画帧更新
 void MainWindow::updateAnimFrame() {
     currDoll->stepProgress += (float)ANIM_INTERVAL / STEP_DURATION;
 
@@ -554,6 +588,7 @@ void MainWindow::updateAnimFrame() {
     update();
 }
 
+// 停止移动并切换玩家
 void MainWindow::stopMovingAndSwitch() {
     currDoll->isMoving = false;
     currDoll->animFrame = 0;
@@ -563,6 +598,7 @@ void MainWindow::stopMovingAndSwitch() {
     switchPlayer();
 }
 
+// 回合计时器回调
 void MainWindow::updateTurnTimer() {
     if (gameEnd || currDoll->isMoving || isPaused) return;
     if (--turnTime <= 0) {
@@ -571,9 +607,10 @@ void MainWindow::updateTurnTimer() {
     update();
 }
 
+// 切换当前玩家
 void MainWindow::switchPlayer() {
     Doll* prevDoll = currDoll;
-    
+
     if (prevDoll->chestCollected > 0) {
         const int totalBonus = prevDoll->bigSwordCount * CHEST_BIG_BONUS
                              + prevDoll->smallSwordCount * CHEST_SMALL_BONUS;
@@ -599,7 +636,7 @@ void MainWindow::switchPlayer() {
                 .arg(prevDoll->hp));
         prevDoll->hpCollected = 0;
     }
-    
+
     currPlayer = (currPlayer == 1) ? 2 : 1;
     turnTime = TURN_TIME;
     currDoll = (currPlayer == 1) ? doll1.get() : doll2.get();
@@ -614,6 +651,7 @@ void MainWindow::switchPlayer() {
     update();
 }
 
+// 游戏结束
 void MainWindow::gameOver(int winner) {
     gameEnd = true;
     QTimer::singleShot(100, this, [this, winner]() {
@@ -651,6 +689,7 @@ QPixmap MainWindow::getP2Sprite(Direction dir, int frame) const {
     return p2Sprites[d][frame % 3];
 }
 
+// 重新开始游戏
 void MainWindow::restartGame() {
     doll1->reset();
     doll2->reset();
@@ -666,6 +705,7 @@ void MainWindow::restartGame() {
     update();
 }
 
+// 暂停游戏
 void MainWindow::pauseGame() {
     isPaused = true;
     bool wasMoving = currDoll->isMoving;

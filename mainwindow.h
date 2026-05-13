@@ -16,14 +16,6 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    static constexpr int BOARD_MARGIN = 80;
-    static constexpr int TURN_TIME = 60;
-    static constexpr int STEP_DURATION = 160;
-    static constexpr int ANIM_INTERVAL = 16;
-    static constexpr int DAMAGE_PER_ARROW = 4;
-    static constexpr int CHEST_SMALL_BONUS = 12;
-    static constexpr int CHEST_BIG_BONUS = 20;
-
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void restartGame();
@@ -78,7 +70,7 @@ private:
     QTimer *turnTimer = nullptr;
     QTimer *animTimer = nullptr;
     QPushButton *pauseButton = nullptr;
-    int turnTime = TURN_TIME;
+    int turnTime = 60;
     int currPlayer = 1;
     int turnCounter = 0;
     int animCounter = 0;
